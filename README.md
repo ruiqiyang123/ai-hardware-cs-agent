@@ -4,11 +4,11 @@
 
 **面向智能硬件售后的 Agentic RAG 客服系统**
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11%20recommended-blue)](https://www.python.org/)
 &nbsp;
 [![LangChain](https://img.shields.io/badge/LangChain-0.3-green)](https://www.langchain.com/)
 &nbsp;
-[![LangGraph](https://img.shields.io/badge/LangGraph-0.2-orange)](https://github.com/langchain-ai/langgraph)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.6-orange)](https://github.com/langchain-ai/langgraph)
 &nbsp;
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.40-red)](https://streamlit.io/)
 
@@ -153,8 +153,8 @@ LLM 总结生成答案
 
 ### 环境要求
 
-- Python 3.10+
-- DashScope API Key
+- Python 3.11 推荐，最低 Python 3.10
+- DashScope API Key（用于 Qwen 对话模型和 Embedding 模型）
 
 ### 克隆项目
 
@@ -163,29 +163,60 @@ git clone https://github.com/ruiqiyang123/smart-hardware-rag-agent.git
 cd smart-hardware-rag-agent
 ```
 
+### 创建虚拟环境
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Windows PowerShell：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
 ### 安装依赖
 
 ```bash
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 配置环境变量
+### 配置 DashScope API Key
+
+复制环境变量模板：
 
 ```bash
-export DASHSCOPE_API_KEY="your-api-key"
+cp .env.example .env
 ```
 
-Windows CMD:
+打开 `.env`，把 `DASHSCOPE_API_KEY` 改成自己的阿里云百炼 API Key：
+
+```bash
+DASHSCOPE_API_KEY=your-dashscope-api-key
+```
+
+也可以直接在终端导出环境变量：
+
+```bash
+export DASHSCOPE_API_KEY="your-dashscope-api-key"
+```
+
+Windows CMD：
 
 ```bat
-set DASHSCOPE_API_KEY=your-api-key
+set DASHSCOPE_API_KEY=your-dashscope-api-key
 ```
 
 ### 初始化知识库
 
 ```bash
-python -c "from rag.vector_store import VectorStoreService; VectorStoreService().load_document()"
+python scripts/init_knowledge_base.py
 ```
+
+该命令会读取 `data/` 目录下的 txt/pdf 文件，分块后写入本地 Chroma 向量库。
 
 ### 启动应用
 
@@ -197,6 +228,50 @@ streamlit run app.py
 
 ```text
 http://localhost:8501
+```
+
+## Demo 使用流程
+
+1. 首次运行前，确认 `.env` 中已经配置 `DASHSCOPE_API_KEY`。
+2. 执行 `python scripts/init_knowledge_base.py` 初始化知识库。
+3. 执行 `streamlit run app.py` 打开聊天页面。
+4. 先测试普通售后问题，例如“扫地机器人无法正常回充，该怎么排查？”。
+5. 再测试报告生成问题，例如“帮我生成本月机器人使用报告，并给出保养建议。”。
+6. 如果更换了 `data/` 目录下的知识库文件，重新执行初始化命令即可更新向量库。
+
+## 常见问题
+
+### 1. 启动时报 `DASHSCOPE_API_KEY` 相关错误
+
+请确认已经完成以下任一配置：
+
+```bash
+cp .env.example .env
+```
+
+并在 `.env` 中填入真实 key；或者在当前终端执行：
+
+```bash
+export DASHSCOPE_API_KEY="your-dashscope-api-key"
+```
+
+### 2. 问答没有检索到知识库内容
+
+请先初始化知识库：
+
+```bash
+python scripts/init_knowledge_base.py
+```
+
+初始化完成后，项目根目录会生成 `chroma_db/` 和 `md5.txt`。
+
+### 3. 修改知识库文件后没有生效
+
+当前版本通过文件 MD5 去重。如果需要完整重建索引，可以删除本地生成文件后重新初始化：
+
+```bash
+rm -rf chroma_db md5.txt
+python scripts/init_knowledge_base.py
 ```
 
 ## 示例问题
@@ -248,6 +323,10 @@ smart-hardware-rag-agent/
 │   └── prompt_loader.py
 ├── data/
 │   └── external/
+├── scripts/
+│   └── init_knowledge_base.py
+├── tests/
+│   └── test_demo_readiness.py
 ├── assets/
 ├── app.py
 ├── requirements.txt
@@ -267,7 +346,6 @@ smart-hardware-rag-agent/
 
 当前版本已经具备基础 Agentic RAG 演示能力，后续计划重点增强以下内容：
 
-- 升级并锁定 LangChain/LangGraph 依赖版本，提升环境可复现性。
 - 将随机 mock 工具改为可配置的确定性数据接口。
 - 增加知识库文档管理页面，支持上传、查看、删除和重建索引。
 - 在答案中展示引用来源，方便用户追溯知识库片段。

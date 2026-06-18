@@ -1,3 +1,4 @@
+from chromadb.config import Settings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from utils.config_handler import chroma_conf
@@ -18,6 +19,7 @@ class VectorStoreService:
             collection_name=chroma_conf["collection_name"],
             embedding_function=embed_model,
             persist_directory=chroma_conf["persist_directory"],
+            client_settings=Settings(anonymized_telemetry=False),
         )
 
         self.spliter = RecursiveCharacterTextSplitter(
@@ -114,5 +116,4 @@ if __name__ == '__main__':
     for r in res:
         print(r.page_content)
         print("-"*20)
-
 
