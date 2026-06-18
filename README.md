@@ -1,8 +1,8 @@
 <div align="center">
 
-# LangChain ReAct Agent · 智能客服
+# Smart Hardware RAG Agent
 
-**基于 LangChain + ReAct 范式 + RAG 检索增强的智能客服系统，以扫地机器人为示例场景**
+**面向智能硬件售后的 Agentic RAG 客服系统**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 &nbsp;
@@ -11,8 +11,6 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2-orange)](https://github.com/langchain-ai/langgraph)
 &nbsp;
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.40-red)](https://streamlit.io/)
-&nbsp;
-[![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 
 </div>
 
@@ -20,195 +18,262 @@
 
 ## 项目简介
 
-基于 LangChain 框架实现的 **ReAct（Reasoning + Acting）Agent**，集成 RAG 检索增强、多工具调用和动态提示词切换。系统能根据用户意图自动判断任务类型（知识问答 / 报告生成），调用合适的工具和知识库完成推理，并通过 Streamlit 流式界面实时展示 Agent 的思考与执行过程。
+Smart Hardware RAG Agent 是一个面向智能硬件售后场景的 AI Agent 应用项目。项目以扫地机器人/扫拖一体机的售后咨询为示例，围绕“用户提问 - 意图判断 - 工具调用 - 知识库检索 - 答案生成 - 使用报告输出”构建完整的 Agentic RAG 流程。
 
-## 效果展示
+这个项目重点展示三类能力：
 
-<div align="center">
+- 用 RAG 将产品知识、故障排查、维护保养、选购指南等非结构化资料接入问答流程。
+- 用 ReAct Agent 根据用户意图自主选择工具，例如知识库检索、用户信息获取、外部数据查询和报告生成。
+- 用中间件和提示词配置管理不同业务场景，让普通问答和个性化报告生成走不同的响应策略。
 
-<img src="assets/chat1.png" alt="问答界面" width="85%">
+当前版本聚焦核心链路演示，后续会继续补充知识库管理、引用溯源、评测集和更稳定的产品化交互。
 
-*图1. 普通问答 — RAG 检索知识库回复*
+## 应用场景
 
-&nbsp;
+| 场景 | 示例问题 | 系统处理方式 |
+|---|---|---|
+| 售后知识问答 | “机器人无法回充怎么办？” | 调用 RAG 检索故障处理资料，再生成简洁答复 |
+| 维护保养咨询 | “多久需要清理滤网和边刷？” | 检索维护保养知识库，输出操作建议 |
+| 选购建议 | “小户型适合买哪类扫地机器人？” | 检索选购指南，结合用户需求总结推荐 |
+| 环境适配 | “南方潮湿天气会影响拖地效果吗？” | 可结合位置/天气工具进行场景化回答 |
+| 使用报告 | “帮我生成本月使用报告” | 获取用户 ID、月份和外部使用记录，生成报告与建议 |
 
-<img src="assets/chat2.png" alt="工具调用" width="85%">
+## 核心能力
 
-*图2. Agent 工具调用 — 实时展示推理与工具执行链路*
-
-&nbsp;
-
-<img src="assets/chat3.png" alt="工具调用详情" width="85%">
-
-*图3. 工具调用详情 — 多步推理与中间结果可视化*
-
-&nbsp;
-
-
-</div>
-
-## 技术架构
-
-<div align="center">
-
-```
-用户输入 (Streamlit)
-      │
-      ▼
-┌─────────────────────────────────────────┐
-│            ReAct Agent                   │
-│                                          │
-│  ┌──────────┐    ┌──────────────────┐   │
-│  │ Thought  │───→│     Action       │   │
-│  │ (推理)    │    │ (工具调用 / RAG)  │   │
-│  └──────────┘    └────────┬─────────┘   │
-│       ↑                   │              │
-│       └─── Observation ◄──┘              │
-│                                          │
-│   Middleware: 工具监控 · 动态提示词切换    │
-└─────────────────────────────────────────┘
-      │                │              │
-      ▼                ▼              ▼
-┌──────────┐   ┌────────────┐  ┌──────────┐
-│   RAG    │   │   Tools    │  │  Prompt  │
-│  Chroma  │   │ 天气/用户   │  │  动态切换  │
-│ 向量检索  │   │ 数据/报告   │  │  模板管理  │
-└──────────┘   └────────────┘  └──────────┘
-```
-
-</div>
-
-### 核心特性
-
-| 特性 | 说明 |
+| 模块 | 能力说明 |
 |---|---|
-| **ReAct 范式** | Thought → Action → Observation 循环，Agent 自主推理并决定调用哪个工具 |
-| **RAG 检索增强** | Chroma 向量库 + DashScope Embedding，MD5 文件去重，支持 txt/pdf 混合加载 |
-| **多工具调用** | 天气查询 / 用户定位 / 外部数据检索 / 报告上下文填充，Agent 按需自动选择 |
-| **动态提示词切换** | Middleware 根据运行时上下文自动切换「普通问答」与「报告生成」两套 System Prompt |
-| **流式对话界面** | Streamlit 构建，支持流式逐字输出、历史消息留存、Agent 推理过程可见 |
-| **模块化结构** | Agent / RAG / Model / Tools / Middleware 独立模块，配置 YAML 驱动 |
+| Agent 编排 | 基于 ReAct 思路组织“判断 - 工具调用 - 观察 - 回答”的执行链路 |
+| RAG 检索 | 使用 Chroma 向量库管理产品资料，支持 txt/pdf 文档加载、分块和 MD5 去重 |
+| 工具调用 | 封装知识库检索、天气、用户位置、用户 ID、月份和外部使用记录等工具 |
+| 动态提示词 | 根据运行时上下文切换普通问答和报告生成提示词 |
+| 数据接入 | 通过 CSV 模拟外部业务系统中的用户使用数据 |
+| Web 交互 | 使用 Streamlit 构建流式聊天界面，支持实时输出 |
+| 配置管理 | 使用 YAML 管理模型、向量库、提示词和外部数据路径 |
+
+## 系统架构
+
+```text
+用户输入
+  |
+  v
+Streamlit Chat UI
+  |
+  v
+ReAct Agent
+  |
+  +-- 意图判断
+  +-- 工具选择
+  +-- 中间件监控
+  +-- 动态 Prompt 切换
+  |
+  +--------------------+--------------------+
+  |                    |                    |
+  v                    v                    v
+RAG Service        Business Tools       Prompt Templates
+  |                    |                    |
+  v                    v                    v
+Chroma Vector DB   CSV/User/Weather     QA / Report Prompt
+  |
+  v
+产品知识库文档
+```
+
+## RAG 流程
+
+```text
+data/ 知识库文件
+  |
+  v
+PDF/TXT Loader
+  |
+  v
+RecursiveCharacterTextSplitter
+  |
+  v
+DashScope Embedding
+  |
+  v
+Chroma 持久化向量库
+  |
+  v
+Retriever Top-K 检索
+  |
+  v
+LLM 总结生成答案
+```
+
+## Agent 工具
+
+| 工具 | 用途 |
+|---|---|
+| `rag_summarize` | 从向量知识库中检索售后资料并总结 |
+| `get_weather` | 获取城市天气，用于环境适配类问题 |
+| `get_user_location` | 获取用户所在城市 |
+| `get_user_id` | 获取当前用户标识 |
+| `get_current_month` | 获取报告月份 |
+| `fetch_external_data` | 查询用户在指定月份的使用记录 |
+| `fill_context_for_report` | 标记报告生成场景，触发动态提示词切换 |
+
+## 效果预览
+
+<div align="center">
+
+<img src="assets/chat1.png" alt="RAG 问答示例" width="85%">
+
+*RAG 知识库问答*
+
+&nbsp;
+
+<img src="assets/chat2.png" alt="Agent 工具调用示例" width="85%">
+
+*Agent 工具调用过程*
+
+&nbsp;
+
+<img src="assets/chat3.png" alt="多步推理示例" width="85%">
+
+*多步推理与中间结果*
+
+</div>
 
 ## 技术栈
 
 | 层级 | 技术 |
 |---|---|
-| LLM | 通义千问（DashScope / ChatTongyi） |
+| 大模型 | Qwen / DashScope `ChatTongyi` |
+| Embedding | DashScope `text-embedding-v4` |
 | Agent 框架 | LangChain + LangGraph |
 | 向量数据库 | Chroma |
-| 文档处理 | PyPDF + RecursiveCharacterTextSplitter |
+| 文档处理 | PyPDF + LangChain Text Splitters |
 | 前端 | Streamlit |
-| 配置 | YAML 驱动（Agent / RAG / Chroma / Prompts） |
+| 配置 | YAML |
+| 数据模拟 | CSV |
 
 ## 快速开始
 
 ### 环境要求
 
-- **Python** ≥ 3.10
-- **DashScope API Key**（[阿里云百炼](https://bailian.console.aliyun.com/) 申请）
+- Python 3.10+
+- DashScope API Key
 
-### 1. 克隆仓库
+### 克隆项目
 
 ```bash
-git clone https://github.com/lhh737/LangChain-ReAct-Agent.git
-cd LangChain-ReAct-Agent
+git clone https://github.com/ruiqiyang123/smart-hardware-rag-agent.git
+cd smart-hardware-rag-agent
 ```
 
-### 2. 安装依赖
+### 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. 配置 API Key
-
-参考 `.env.example`，设置阿里云百炼 API Key：
+### 配置环境变量
 
 ```bash
-# Linux / macOS
 export DASHSCOPE_API_KEY="your-api-key"
+```
 
-# Windows (CMD)
+Windows CMD:
+
+```bat
 set DASHSCOPE_API_KEY=your-api-key
 ```
 
-> 申请地址：[阿里云百炼控制台](https://bailian.console.aliyun.com/)
-
-### 4. 初始化知识库（首次运行）
+### 初始化知识库
 
 ```bash
 python -c "from rag.vector_store import VectorStoreService; VectorStoreService().load_document()"
 ```
 
-### 5. 启动应用
+### 启动应用
 
 ```bash
 streamlit run app.py
 ```
 
-浏览器自动打开  http://localhost:8501
+默认访问地址：
 
-### 验证运行
+```text
+http://localhost:8501
+```
 
-启动后在聊天框输入以下测试问题：
+## 示例问题
 
-- *扫地机器人有哪些主要功能？*（RAG 知识库问答）
-- *如果机器人无法正常回充，该如何处理？*（故障排查）
-- *请根据用户数据生成一份个性化使用报告*（报告生成 + 工具调用）
+```text
+扫地机器人无法正常回充，该怎么排查？
+```
+
+```text
+家里有宠物，应该怎么维护主刷和滤网？
+```
+
+```text
+小户型适合买哪类扫拖一体机器人？
+```
+
+```text
+帮我生成本月机器人使用报告，并给出保养建议。
+```
 
 ## 项目结构
 
-```
-LangChain-ReAct-Agent/
-│
-├── agent/                          # Agent 核心
-│   ├── react_agent.py              #   ReAct Agent 主逻辑（流式执行）
+```text
+smart-hardware-rag-agent/
+├── agent/
+│   ├── react_agent.py
 │   └── tools/
-│       ├── agent_tools.py          #   工具函数（RAG检索/天气/用户数据/报告）
-│       └── middleware.py           #   中间件（工具监控/动态提示词切换）
-│
-├── rag/                            # RAG 检索增强
-│   ├── vector_store.py             #   Chroma 向量库 · 文档加载 · MD5 去重
-│   └── rag_service.py              #   RAG 检索 → LLM 总结服务
-│
+│       ├── agent_tools.py
+│       └── middleware.py
+├── rag/
+│   ├── vector_store.py
+│   └── rag_service.py
 ├── model/
-│   └── factory.py                  # 模型工厂（ChatTongyi + DashScopeEmbedding）
-│
-├── config/                         # YAML 配置文件
-│   ├── agent.yml                   #   Agent 行为与工具配置
-│   ├── chroma.yml                  #   向量库与检索参数
-│   ├── prompts.yml                 #   提示词模板
-│   └── rag.yml                     #   RAG 模型与参数
-│
-├── prompts/                        # 提示词模板
-│   ├── main_prompt.txt             #   普通问答 System Prompt
-│   ├── rag_summarize.txt           #   RAG 总结 Prompt
-│   └── report_prompt.txt           #   报告生成 System Prompt
-│
-├── utils/                          # 工具函数
-│   ├── config_handler.py           #   YAML 配置加载
-│   ├── file_handler.py             #   文件解析（PDF/TXT）
-│   ├── logger_handler.py           #   日志管理
-│   ├── path_tool.py                #   路径工具
-│   └── prompt_loader.py            #   提示词加载
-│
-├── data/                           # 知识库文档（扫地机器人相关）
-├── assets/                         # 效果展示截图
-├── app.py                          # Streamlit 应用入口
+│   └── factory.py
+├── config/
+│   ├── agent.yml
+│   ├── chroma.yml
+│   ├── prompts.yml
+│   └── rag.yml
+├── prompts/
+│   ├── main_prompt.txt
+│   ├── rag_summarize.txt
+│   └── report_prompt.txt
+├── utils/
+│   ├── config_handler.py
+│   ├── file_handler.py
+│   ├── logger_handler.py
+│   ├── path_tool.py
+│   └── prompt_loader.py
+├── data/
+│   └── external/
+├── assets/
+├── app.py
 ├── requirements.txt
 └── README.md
 ```
 
 ## 配置说明
 
-项目通过 `config/` 目录下的 YAML 文件统一管理配置：
-
 | 文件 | 说明 |
 |---|---|
-| `rag.yml` | 对话模型名称、Embedding 模型名称 |
-| `chroma.yml` | Chroma 持久化路径、分块大小、检索 Top-K、支持的文件类型 |
-| `prompts.yml` | 各场景提示词模板文件路径 |
-| `agent.yml` | Agent 超时时间、外部数据路径等 |
+| `config/rag.yml` | 对话模型与 Embedding 模型配置 |
+| `config/chroma.yml` | 向量库名称、持久化路径、分块参数、检索 Top-K |
+| `config/prompts.yml` | 普通问答、RAG 总结、报告生成提示词路径 |
+| `config/agent.yml` | 外部数据路径等 Agent 业务配置 |
 
-首次运行只需确保 **DashScope API Key 已设置** 且 `data/` 目录下有知识库文档即可。
+## 后续优化方向
 
+当前版本已经具备基础 Agentic RAG 演示能力，后续计划重点增强以下内容：
+
+- 升级并锁定 LangChain/LangGraph 依赖版本，提升环境可复现性。
+- 将随机 mock 工具改为可配置的确定性数据接口。
+- 增加知识库文档管理页面，支持上传、查看、删除和重建索引。
+- 在答案中展示引用来源，方便用户追溯知识库片段。
+- 增加 badcase 评测集，记录问题、期望答案、检索命中和工具调用结果。
+- 优化 Streamlit 页面，让售后问答、知识库管理和报告生成流程更清晰。
+
+## 简历项目关键词
+
+`AI Agent` · `RAG` · `LangChain` · `LangGraph` · `Tool Calling` · `Prompt Engineering` · `Chroma` · `Streamlit` · `智能客服` · `智能硬件售后`
