@@ -140,8 +140,8 @@ LLM 总结生成答案
 
 | 层级 | 技术 |
 |---|---|
-| 大模型 | Qwen / DashScope `ChatTongyi` |
-| Embedding | DashScope `text-embedding-v4` |
+| 大模型 | Qwen / DashScope `ChatTongyi`；MiMo / OpenAI-compatible `ChatOpenAI` |
+| Embedding | DashScope `text-embedding-v4`；本地 hash embedding demo 模式 |
 | Agent 框架 | LangChain + LangGraph |
 | 向量数据库 | Chroma |
 | 文档处理 | PyPDF + LangChain Text Splitters |
@@ -155,6 +155,7 @@ LLM 总结生成答案
 
 - Python 3.11 推荐，最低 Python 3.10
 - DashScope API Key（用于 Qwen 对话模型和 Embedding 模型）
+- 或 MiMo API Key（用于小米 MiMo 聊天模型；可搭配本地 embedding 跑 demo）
 
 ### 克隆项目
 
@@ -210,6 +211,20 @@ Windows CMD：
 set DASHSCOPE_API_KEY=your-dashscope-api-key
 ```
 
+### 使用小米 MiMo 启动
+
+如果只想使用小米 MiMo 作为聊天模型，可以在 `.env` 中改成：
+
+```bash
+CHAT_PROVIDER=mimo
+MIMO_API_KEY=your-mimo-api-key
+MIMO_BASE_URL=https://token-plan-sgp.xiaomimimo.com/v1
+MIMO_CHAT_MODEL=mimo-v2.5-pro
+EMBEDDING_PROVIDER=local
+```
+
+`EMBEDDING_PROVIDER=local` 用于没有 DashScope Embedding Key 时跑通 demo；如果需要更稳定的语义检索效果，建议继续使用 DashScope Embedding。
+
 ### 初始化知识库
 
 ```bash
@@ -232,7 +247,7 @@ http://localhost:8501
 
 ## Demo 使用流程
 
-1. 首次运行前，确认 `.env` 中已经配置 `DASHSCOPE_API_KEY`。
+1. 首次运行前，确认 `.env` 中已经配置 `DASHSCOPE_API_KEY`，或按上方方式配置 MiMo。
 2. 执行 `python scripts/init_knowledge_base.py` 初始化知识库。
 3. 执行 `streamlit run app.py` 打开聊天页面。
 4. 先测试普通售后问题，例如“扫地机器人无法正常回充，该怎么排查？”。

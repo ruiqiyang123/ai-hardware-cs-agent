@@ -23,6 +23,8 @@ class DemoReadinessTest(unittest.TestCase):
 
         self.assertIn("langchain==0.3.30", requirements)
         self.assertIn("langgraph-prebuilt==0.6.5", requirements)
+        self.assertIn("langchain-openai==0.3.35", requirements)
+        self.assertIn("socksio==1.0.0", requirements)
         self.assertIn("python-dotenv", requirements)
         self.assertIn("posthog<6.0.0", requirements)
 
@@ -37,6 +39,10 @@ class DemoReadinessTest(unittest.TestCase):
 
         env_example = read_text(".env.example")
         self.assertIn("DASHSCOPE_API_KEY=", env_example)
+        self.assertIn("MIMO_API_KEY=", env_example)
+        self.assertIn("MIMO_BASE_URL=", env_example)
+        self.assertIn("EMBEDDING_PROVIDER=", env_example)
+        self.assertTrue((ROOT / "model/local_embeddings.py").exists())
 
     def test_readme_has_external_runbook(self):
         readme = read_text("README.md")
