@@ -212,6 +212,3 @@ LangChain-ReAct-Agent/
 
 首次运行只需确保 **DashScope API Key 已设置** 且 `data/` 目录下有知识库文档即可。
 
-## License
-
-MIT © [lhh737](https://github.com/lhh737)
