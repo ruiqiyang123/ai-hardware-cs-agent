@@ -50,14 +50,21 @@ def get_user_location() -> str:
     if loc:
         return loc
 
-    # 兜底：IP 定位
+    # 兜底：IP 定位（带重试，覆盖瞬时网络抖动）
     try:
-        resp = requests.get("http://ip-api.com/json/", params={"lang": "zh"}, timeout=5)
-        resp.raise_for_status()
-        data = resp.json()
-        city = data.get("city") or data.get("regionName") or "未知"
-        logger.info(f"[get_user_location]IP定位城市：{city}")
-        return city
+        for attempt in range(3):
+            try:
+                resp = requests.get("http://ip-api.com/json/", params={"lang": "zh"}, timeout=5)
+                resp.raise_for_status()
+                data = resp.json()
+                city = data.get("city") or data.get("regionName") or "未知"
+                logger.info(f"[get_user_location]IP定位城市：{city}")
+                return city
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                if attempt < 2:
+                    logger.info(f"[get_user_location]IP定位第{attempt + 1}次超时，重试中...")
+                    continue
+                raise
     except Exception as e:
         logger.warning(f"[get_user_location]IP定位失败：{e}，使用默认城市")
         return "深圳"  # 最后兜底
