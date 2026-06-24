@@ -1,14 +1,17 @@
 import streamlit as st
 import os
 from agent.react_agent import ReactAgent
+from agent.tools.agent_tools import configure_rag_model
+from model.factory import build_chat_model
 from utils.session_context import set_user_id, set_location
+from utils.logger_handler import logger
 
 # ============================================================
 # Streamlit Cloud & 本地环境兼容配置
 # 支持环境变量 + 侧边栏手动配置两种方式
 # ============================================================
 
-# 检查是��有环境变量API Key
+# 检查是否有环境变量API Key
 env_dashscope_key = os.getenv("DASHSCOPE_API_KEY")
 env_mimo_key = os.getenv("MIMO_API_KEY")
 
@@ -18,7 +21,7 @@ st.caption("基于 LangChain ReAct Agent + RAG 检索增强")
 st.divider()
 
 # ============================================================
-# 侧边栏：API Key 配置（优先级最高）
+# 侧边栏：API Key 配置
 # 部署后用户可以输入临时API Key直接体验
 # ============================================================
 with st.sidebar:
@@ -28,7 +31,7 @@ with st.sidebar:
     if not env_dashscope_key and not env_mimo_key:
         with st.expander("📖 如何获取API Key?", expanded=False):
             st.markdown("""
-            **方式1：阿里云百炼（推荐��**
+            **方式1：阿里云百炼（推荐）**
             - 访问：https://bailian.console.aliyun.com/
             - 登录后创建 API Key
             - 复制到下方输入框
@@ -47,12 +50,6 @@ with st.sidebar:
             help="申请地址：https://bailian.console.aliyun.com/"
         )
 
-        if dashscope_key:
-            os.environ["DASHSCOPE_API_KEY"] = dashscope_key
-            os.environ["CHAT_PROVIDER"] = "dashscope"
-            os.environ["EMBEDDING_PROVIDER"] = "dashscope"
-            st.success("✅ DashScope API Key 已设置")
-
         st.divider()
 
         # MiMo 配置
@@ -62,13 +59,12 @@ with st.sidebar:
             type="password",
             help="申请地址：https://mimo.xiaomi.com/"
         )
-        if mimo_key:
-            os.environ["MIMO_API_KEY"] = mimo_key
-            os.environ["CHAT_PROVIDER"] = "mimo"
-            os.environ["EMBEDDING_PROVIDER"] = "local"
-            st.success("✅ MiMo API Key 已设置")
+        mimo_base_url = st.text_input(
+            "MiMo Base URL",
+            value="https://token-plan-sgp.xiaomimimo.com/v1",
+            help="默认 Token Plan 新加坡节点"
+        )
 
-        # 检查是否有配置
         if not dashscope_key and not mimo_key:
             st.warning("⚠️ 请配置 API Key 以正常使用")
 
@@ -79,6 +75,68 @@ with st.sidebar:
             st.text("使用：DashScope")
         elif env_mimo_key:
             st.text("使用：MiMo")
+        dashscope_key = env_dashscope_key
+        mimo_key = env_mimo_key
+        mimo_base_url = os.getenv("MIMO_BASE_URL", "https://token-plan-sgp.xiaomimimo.com/v1")
+
+
+# ============================================================
+# 会话级模型构建（替代原 os.environ 进程级路由）
+#
+# 改造点：原版本在侧边栏用 os.environ["CHAT_PROVIDER"] 切换 provider，
+# 但 model.factory 在导入时已构建单例 chat_model，运行时改 env 不生效，
+# 且多会话共享进程级 env 存在串号风险。
+#
+# 现改为：按当前配置显式 build_chat_model 构建，注入 ReactAgent 与
+# RAG 服务，并按配置签名缓存 agent，切换 provider/Key 后自动重建。
+# ============================================================
+def resolve_chat_config() -> tuple[dict, str]:
+    """从侧边栏 / 环境变量解析当前应使用的 chat 模型配置。
+
+    返回 (build_kwargs, config_signature)：
+    - build_kwargs 传给 build_chat_model；
+    - config_signature 用作 session_state 缓存键，变更即重建 agent。
+    """
+    if mimo_key:
+        kwargs = {
+            "provider": "mimo",
+            "api_key": mimo_key,
+            "base_url": mimo_base_url,
+            "model_name": os.getenv("MIMO_CHAT_MODEL"),
+        }
+        sig = f"mimo:{mimo_key}:{mimo_base_url}"
+    elif dashscope_key:
+        # DashScope 的 key 仍需写入 env，ChatTongyi 在调用时读取
+        os.environ["DASHSCOPE_API_KEY"] = dashscope_key
+        kwargs = {"provider": "dashscope"}
+        sig = f"dashscope:{dashscope_key}"
+    else:
+        kwargs = {}
+        sig = "default"
+
+    return kwargs, sig
+
+
+def get_or_build_agent() -> ReactAgent:
+    kwargs, sig = resolve_chat_config()
+
+    cached_sig = st.session_state.get("agent_config_sig")
+    if "agent" in st.session_state and cached_sig == sig:
+        return st.session_state["agent"]
+
+    # 配置变更（或首次）：构建模型 → 注入 RAG → 构建 Agent
+    try:
+        chat_model = build_chat_model(**kwargs)
+        configure_rag_model(chat_model)
+        st.session_state["agent"] = ReactAgent(chat_model=chat_model)
+        st.session_state["agent_config_sig"] = sig
+        logger.info(f"[app]重建 Agent，配置签名={sig}")
+    except ValueError as e:
+        st.error(f"模型配置错误：{e}")
+        if "agent" not in st.session_state:
+            st.session_state["agent"] = None
+    return st.session_state.get("agent")
+
 
 # ============================================================
 # 侧边栏：会话级用户上下文（替代原 random mock）
@@ -105,9 +163,8 @@ with st.sidebar:
     st.markdown("- 我所在城市的天气适合拖地吗？")
     st.markdown("- 帮我生成本月机器人使用报告，并给出保养建议。")
 
-# 初始化 Agent
-if "agent" not in st.session_state:
-    st.session_state["agent"] = ReactAgent()
+# 构建会话级 Agent
+agent = get_or_build_agent()
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
@@ -118,20 +175,23 @@ for message in st.session_state["messages"]:
 prompt = st.chat_input()
 
 if prompt:
-    st.chat_message("user").write(prompt)
-    st.session_state["messages"].append({"role": "user", "content": prompt})
+    if agent is None:
+        st.error("⚠️ 请先在侧边栏配置 API Key")
+    else:
+        st.chat_message("user").write(prompt)
+        st.session_state["messages"].append({"role": "user", "content": prompt})
 
-    response_messages: list[str] = []
-    with st.spinner("智能客服思考中..."):
-        res_stream = st.session_state["agent"].execute_stream(prompt)
+        response_messages: list[str] = []
+        with st.spinner("智能客服思考中..."):
+            res_stream = agent.execute_stream(prompt)
 
-        def stream_generator(generator, cache_list):
-            """逐字流式输出，同时缓存完整响应"""
-            for chunk in generator:
-                cache_list.append(chunk)
-                for char in chunk:
-                    yield char
+            def stream_generator(generator, cache_list):
+                """逐字流式输出，同时缓存完整响应"""
+                for chunk in generator:
+                    cache_list.append(chunk)
+                    for char in chunk:
+                        yield char
 
-        st.chat_message("assistant").write_stream(stream_generator(res_stream, response_messages))
-        st.session_state["messages"].append({"role": "assistant", "content": "".join(response_messages)})
-        st.rerun()
+            st.chat_message("assistant").write_stream(stream_generator(res_stream, response_messages))
+            st.session_state["messages"].append({"role": "assistant", "content": "".join(response_messages)})
+            st.rerun()

@@ -22,6 +22,17 @@ rag = RagSummarizeService()
 external_data = {}
 
 
+def configure_rag_model(model):
+    """按会话重置 RAG 总结服务使用的 chat 模型。
+
+    Web 前端切换 provider / API Key 后调用本函数，让 rag_summarize 工具与
+    ReactAgent 共用同一会话模型，避免「主对话用 MiMo、RAG 总结却走 DashScope
+    且无 key 报错」的割裂。
+    """
+    global rag
+    rag = RagSummarizeService(model=model)
+
+
 @tool(description="从向量存储中检索参考资料，返回包含答案与引用来源的结构化内容")
 def rag_summarize(query: str) -> str:
     return rag.rag_summarize(query)

@@ -13,17 +13,19 @@ from rag.vector_store import VectorStoreService
 from rag.source_formatter import format_reference_sources
 from utils.prompt_loader import load_rag_prompts
 from langchain_core.prompts import PromptTemplate
-from model.factory import chat_model
+from model.factory import chat_model as _default_chat_model
 from utils.logger_handler import logger
 
 
 class RagSummarizeService:
-    def __init__(self):
+    def __init__(self, model=None):
         self.vector_store = VectorStoreService()
         self.retriever = self.vector_store.get_retriever()
         self.prompt_text = load_rag_prompts()
         self.prompt_template = PromptTemplate.from_template(self.prompt_text)
-        self.model = chat_model
+        # model 可按会话注入，与 ReactAgent 共用同一 chat 模型；
+        # 未传则用模块级默认实例（CLI / 评测脚本）。
+        self.model = model or _default_chat_model
         self.chain = self._init_chain()
 
     def _init_chain(self):
