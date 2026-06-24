@@ -98,5 +98,55 @@
     "question": "扫地机器人适合老人用吗？操作复杂吗？",
     "expected_keywords": ["老人", "操作", "语音", "简单", "定时"],
     "category": "选购建议"
+  },
+  {
+    "question": "机器人建图后地图突然丢失了怎么办？",
+    "expected_keywords": ["地图", "建图", "保存", "恢复", "重置"],
+    "category": "故障排查"
+  },
+  {
+    "question": "APP连不上机器人，一直显示离线",
+    "expected_keywords": ["APP", "离线", "网络", "WiFi", "重连"],
+    "category": "故障排查"
+  },
+  {
+    "question": "机器人续航明显变短，扫一会就没电",
+    "expected_keywords": ["续航", "电池", "充电", "衰减", "更换"],
+    "category": "故障排查"
+  },
+  {
+    "question": "拖布多久需要更换一次？",
+    "expected_keywords": ["拖布", "更换", "月", "磨损", "清洗"],
+    "category": "维护保养"
+  },
+  {
+    "question": "主刷多长时间清理一次毛发？",
+    "expected_keywords": ["主刷", "清理", "毛发", "周", "缠绕"],
+    "category": "维护保养"
+  },
+  {
+    "question": "集尘袋满了会提示吗？多久换一次？",
+    "expected_keywords": ["集尘", "尘袋", "更换", "提示", "月"],
+    "category": "维护保养"
+  },
+  {
+    "question": "家里门槛比较高，机器人能爬过去吗？",
+    "expected_keywords": ["门槛", "越障", "爬坡", "高度", "厘米"],
+    "category": "选购建议"
+  },
+  {
+    "question": "扫地机器人噪音一般多大？吵不吵？",
+    "expected_keywords": ["噪音", "分贝", "静音", "模式", "dB"],
+    "category": "选购建议"
+  },
+  {
+    "question": "可以设置虚拟墙不让它进厨房吗？",
+    "expected_keywords": ["虚拟墙", "禁区", "厨房", "划区", "APP"],
+    "category": "选购建议"
+  },
+  {
+    "question": "有没有支持定时清扫的机器人？怎么设置？",
+    "expected_keywords": ["定时", "预约", "清扫", "计划", "APP"],
+    "category": "选购建议"
   }
 ]

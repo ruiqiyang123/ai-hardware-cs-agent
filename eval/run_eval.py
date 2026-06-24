@@ -7,10 +7,12 @@
     python eval/run_eval.py                    # 用当前配置评测
     python eval/run_eval.py --tag before       # 标记为"优化前"，结果存 eval_results/before.json
     python eval/run_eval.py --tag after        # 标记为"优化后"
+    python eval/run_eval.py --tag after --record  # 同时追加到 eval_results/history.jsonl
 
 产出：
     - 控制台打印整体 + 分类的关键词覆盖率
     - eval_results/<tag>.json 保存详细结果，方便前后对比
+    - --record 时追加一行到 eval_results/history.jsonl，供 trend.py 查看优化趋势
 """
 import argparse
 import json
@@ -54,6 +56,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tag", default="default", help="结果标签，如 before/after")
     parser.add_argument("--cases", default=None, help="评测集路径，默认 eval/eval_cases.json")
+    parser.add_argument("--record", action="store_true", help="追加本次结果到 eval_results/history.jsonl")
     args = parser.parse_args()
 
     cases_path = args.cases or os.path.join(os.path.dirname(__file__), "eval_cases.json")
@@ -121,6 +124,20 @@ def main():
         }, f, ensure_ascii=False, indent=2)
 
     print(f"\n💾 结果已保存：{output_path}")
+
+    # 可选：追加到历史趋势文件，供 trend.py 查看优化演进
+    if args.record:
+        history_path = os.path.join(result_dir, "history.jsonl")
+        with open(history_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "tag": args.tag,
+                "timestamp": datetime.now().isoformat(),
+                "total_cases": len(results),
+                "overall_coverage": overall,
+                "category_stats": {cat: {"avg": s["total_cov"] / s["count"], "count": s["count"]}
+                                   for cat, s in cat_stats.items()},
+            }, ensure_ascii=False) + "\n")
+        print(f"📈 已追加到历史趋势：{history_path}")
 
 
 if __name__ == "__main__":
