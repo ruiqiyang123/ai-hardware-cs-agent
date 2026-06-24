@@ -12,6 +12,8 @@
 &nbsp;
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.40-red)](https://streamlit.io/)
 
+**🚀 [在线体验](https://smart-hardware-rag-agent.streamlit.app)** | **⭐ [GitHub仓库](https://github.com/ruiqiyang123/smart-hardware-rag-agent)**
+
 </div>
 
 ---
@@ -26,7 +28,19 @@ Smart Hardware RAG Agent 是一个面向智能硬件售后场景的 AI Agent 应
 - 用 ReAct Agent 根据用户意图自主选择工具，例如知识库检索、用户信息获取、外部数据查询和报告生成。
 - 用中间件和提示词配置管理不同业务场景，让普通问答和个性化报告生成走不同的响应策略。
 
-当前版本聚焦核心链路演示，后续会继续补充知识库管理、引用溯源、评测集和更稳定的产品化交互。
+当前版本聚焦核心链路演示，已实现知识库管理、引用溯源、评测集和稳定的产品化交互，后续会继续补充多轮对话记忆、文档管理和Badcase分析功能。
+
+## 项目亮点
+
+| 亮点 | 说明 |
+|---|---|
+| 🚀 **在线体验** | 已部署到 Streamlit Cloud，无需克隆代码即可体验 |
+| 🤖 **多步推理** | 基于 LangGraph + ReAct 的智能 Agent，自主决策工具调用 |
+| 📚 **知识库检索** | Chroma 向量库 + MD5 去重，支持 PDF/TXT 文档 |
+| 🔍 **引用溯源** | 答案自动标注来源，提升可信度 |
+| 👤 **用户上下文** | 会话级用户管理，支持个性化报告生成 |
+| 🌍 **真实数据** | 集成 Open-Meteo 天气 API、IP 定位 |
+| 📊 **评测体系** | 20题评测集 + 自动化对比脚本，量化优化效果 |
 
 ## 应用场景
 
@@ -149,7 +163,21 @@ LLM 总结生成答案
 | 配置 | YAML |
 | 数据模拟 | CSV |
 
-## 快速开始
+## 快速体验
+
+### 🚀 在线体验（推荐）
+
+**无需安装任何环境，直接体验：**
+
+[https://smart-hardware-rag-agent.streamlit.app](https://smart-hardware-rag-agent.streamlit.app)
+
+**在线体验步骤���**
+1. 打开链接
+2. 在侧边栏输入临时 API Key（支持 DashScope 或 MiMo）
+3. 选择测试用户
+4. 输入示例问题开始体验
+
+### 💻 本地体验
 
 ### 环境要求
 
@@ -357,16 +385,29 @@ smart-hardware-rag-agent/
 | `config/prompts.yml` | 普通问答、RAG 总结、报告生成提示词路径 |
 | `config/agent.yml` | 外部数据路径等 Agent 业务配置 |
 
-## 后续优化方向
+## 已完成的优化
 
-当前版本已经具备基础 Agentic RAG 演示能力，后续计划重点增强以下内容：
+当前版本在基础 Agentic RAG 能力之上，已完成以下增强：
 
-- 将随机 mock 工具改为可配置的确定性数据接口。
-- 增加知识库文档管理页面，支持上传、查看、删除和重建索引。
-- 在答案中展示引用来源，方便用户追溯知识库片段。
-- 增加 badcase 评测集，记录问题、期望答案、检索命中和工具调用结果。
-- 优化 Streamlit 页面，让售后问答、知识库管理和报告生成流程更清晰。
+- **✅ 在线部署**：支持 Streamlit Cloud 一键部署，用户体验零门槛
+- **✅ 真实数据接入**：将原 random mock 工具替换为真实接口——天气走 Open-Meteo API、用户位置走 IP 定位、用户身份/月份走会话级上下文，让 demo 贴近真实产品逻辑。
+- **✅ 会话级用户上下文**：新增 `utils/session_context.py`，前端侧边栏可切换登录用户，Agent 调用 `get_user_id`/`get_user_location` 时读取的是当前会话绑定用户，而非随机值。
+- **✅ 引用溯源**：RAG 答案末尾自动标注命中的知识库文档来源，提升售后场景下用户对 AI 回答的信任度。
+- **✅ 数据生成器**：`scripts/generate_records.py` 可脚本化生成用户使用记录，支持扩展用户数与月份范围。
+- **✅ 评测体系**：`eval/` 下提供 20 题评测集与评测脚本，支持分块策略、Top-K、Prompt 等维度的前后对比，量化优化效果。
+- **✅ 知识库管理**：支持 MD5 去重、PDF/TXT 文档加载、分块策略配置
 
-## 简历项目关键词
+后续仍可继续增强：多轮对话记忆、知识库文档管理页面（上传/删除/重建索引）、更细粒度的 badcase 记录。
 
-`AI Agent` · `RAG` · `LangChain` · `LangGraph` · `Tool Calling` · `Prompt Engineering` · `Chroma` · `Streamlit` · `智能客服` · `智能硬件售后`
+## 评测
+
+```bash
+# 优化前评测（修改分块参数/Prompt 前先跑一次）
+python eval/run_eval.py --tag before
+
+# 调整 chunk_size / k / prompt 后再跑一次
+python eval/run_eval.py --tag after
+
+# 对比前后效果，产出简历量化数字
+python eval/compare.py before after
+```

@@ -1,0 +1,102 @@
+[
+  {
+    "question": "扫地机器人无法正常回充，该怎么排查？",
+    "expected_keywords": ["回充", "充电座", "基座", "传感器", "红外"],
+    "category": "故障排查"
+  },
+  {
+    "question": "机器人一直报错说尘盒满了，但我清理过了还是报错",
+    "expected_keywords": ["尘盒", "传感器", "清理", "复位", "重启"],
+    "category": "故障排查"
+  },
+  {
+    "question": "扫地机器人卡在沙发下面出不来怎么办？",
+    "expected_keywords": ["沙发", "卡住", "高度", "避障", "禁区"],
+    "category": "故障排查"
+  },
+  {
+    "question": "家里有宠物，应该怎么维护主刷和滤网？",
+    "expected_keywords": ["宠物", "毛发", "主刷", "滤网", "清理"],
+    "category": "维护保养"
+  },
+  {
+    "question": "多久需要清理一次滤网？",
+    "expected_keywords": ["滤网", "周", "月", "清洗", "更换"],
+    "category": "维护保养"
+  },
+  {
+    "question": "边刷多久换一次？",
+    "expected_keywords": ["边刷", "更换", "月", "磨损", "寿命"],
+    "category": "维护保养"
+  },
+  {
+    "question": "小户型适合买哪类扫拖一体机器人？",
+    "expected_keywords": ["小户型", "体积", "导航", "激光", "避障"],
+    "category": "选购建议"
+  },
+  {
+    "question": "家里铺了地毯，选扫地机器人要注意什么？",
+    "expected_keywords": ["地毯", "吸力", "增压", "滚刷", "识别"],
+    "category": "选购建议"
+  },
+  {
+    "question": "养猫的家庭推荐什么样的扫地机器人？",
+    "expected_keywords": ["宠物", "毛发", "防缠绕", "吸力", "滚刷"],
+    "category": "选购建议"
+  },
+  {
+    "question": "扫地机器人的滤网怎么清洗？",
+    "expected_keywords": ["滤网", "清洗", "水洗", "晾干", "更换"],
+    "category": "维护保养"
+  },
+  {
+    "question": "扫地机器人声音很大是什么原因？",
+    "expected_keywords": ["噪音", "异响", "主刷", "电机", "清理"],
+    "category": "故障排查"
+  },
+  {
+    "question": "机器人拖地拖不干净是什么原因？",
+    "expected_keywords": ["拖地", "水箱", "抹布", "湿度", "清洁"],
+    "category": "故障排查"
+  },
+  {
+    "question": "扫地机器人能清理多大面积？",
+    "expected_keywords": ["面积", "续航", "电池", "充电", "户型"],
+    "category": "选购建议"
+  },
+  {
+    "question": "集尘基站有什么用？有必要买吗？",
+    "expected_keywords": ["集尘", "基站", "自动", "清理", "尘袋"],
+    "category": "选购建议"
+  },
+  {
+    "question": "扫地机器人的导航方式有哪些区别？",
+    "expected_keywords": ["导航", "激光", "视觉", "LDS", "SLAM"],
+    "category": "选购建议"
+  },
+  {
+    "question": "机器人总是重复清扫同一个区域怎么办？",
+    "expected_keywords": ["重复", "地图", "建图", "导航", "复位"],
+    "category": "故障排查"
+  },
+  {
+    "question": "滤网可以水洗吗？水洗后还能用吗？",
+    "expected_keywords": ["滤网", "水洗", "晾干", "HEPA", "更换"],
+    "category": "维护保养"
+  },
+  {
+    "question": "新买的扫地机器人第一次使用要注意什么？",
+    "expected_keywords": ["首次", "建图", "充电", "调试", "禁区"],
+    "category": "维护保养"
+  },
+  {
+    "question": "机器人水箱漏水怎么办？",
+    "expected_keywords": ["水箱", "漏水", "密封", "更换", "检查"],
+    "category": "故障排查"
+  },
+  {
+    "question": "扫地机器人适合老人用吗？操作复杂吗？",
+    "expected_keywords": ["老人", "操作", "语音", "简单", "定时"],
+    "category": "选购建议"
+  }
+]
