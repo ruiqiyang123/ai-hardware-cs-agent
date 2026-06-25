@@ -70,11 +70,12 @@ with st.sidebar:
 
         st.divider()
     else:
-        st.info("✅ 已检测到环境变量中的API Key")
+        st.success("✅ 已配置共享 API Key，可直接体验")
         if env_dashscope_key:
-            st.text("使用：DashScope")
+            st.caption("模型：阿里云百炼 Qwen")
         elif env_mimo_key:
-            st.text("使用：MiMo")
+            st.caption("模型：小米 MiMo")
+        st.caption("💡 共享额度有限，请合理使用")
         dashscope_key = env_dashscope_key
         mimo_key = env_mimo_key
         mimo_base_url = os.getenv("MIMO_BASE_URL", "https://token-plan-sgp.xiaomimimo.com/v1")
