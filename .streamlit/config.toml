@@ -5,15 +5,15 @@ enableCORS = false
 enableWebsocketCompression = false
 
 [theme]
-primaryColor = "#FF4B4B"
+# 温和的科技蓝，比默认红更适合售后客服场景
+primaryColor = "#2E7CF6"
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F2F6"
-textColor = "#262730"
+secondaryBackgroundColor = "#F5F7FB"
+textColor = "#1F2937"
 font = "sans serif"
 
 [logger]
 level = "info"
 
 [browser]
-serverAddress = "localhost"
-serverPort = 8501
+gatherUsageStats = false

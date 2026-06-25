@@ -9,41 +9,54 @@
 session_state），所以需要一个中间层：Streamlit 前端把当前用户信息写入这里，
 工具函数从这里读。
 
-实现方式采用「线程局部变量 + 默认值」，既能在 Streamlit 多会话场景下工作，
-也能在非 Web 环境（如评测脚本、单测）下用默认值跑通。
-"""
-import threading
-from typing import Optional
+实现演进
+----------------------
+v1（已废弃）：用 threading.local()。问题是 LangGraph 的 ReAct Agent 内部用
+ThreadPoolExecutor 跑工具调用，子线程**不会**继承父线程的 threading.local 值，
+导致工具读到的永远是默认值——用户切换城市无效，IP 定位被 VPN 影响（部署后
+实际暴露的 bug）。
 
-# 线程局部存储：每个请求线程（Streamlit 会话）有自己独立的上下文
-_local = threading.local()
+v2（当前）：模块级简单变量。Streamlit 单进程多 session 场景下：
+- 每个 user 切换 user_options 时调用 set_user_id/set_location 覆盖全局值
+- 工具函数（无论在哪个线程）都读到最新值，行为可预测
+- 理论上多用户并发时会有竞争，但对 demo 场景可接受（且 Streamlit 本身按 session
+  rerun，竞争窗口极小）
+"""
+from typing import Optional
 
 # 默认测试用户（跑评测脚本、单测时用这个，避免依赖 Web 上下文）
 DEFAULT_USER_ID = "1001"
 DEFAULT_LOCATION: Optional[str] = None  # None 表示走 IP 定位兜底
 
+# 模块级状态：进程内全局共享，跨线程可见
+_user_id: str = DEFAULT_USER_ID
+_location: Optional[str] = DEFAULT_LOCATION
+
 
 def current_user_id() -> str:
     """获取当前会话的用户 ID，默认 1001。"""
-    return getattr(_local, "user_id", DEFAULT_USER_ID)
+    return _user_id
 
 
 def current_location() -> Optional[str]:
     """获取当前会话的用户位置，未设置返回 None（调用方兜底用 IP 定位）。"""
-    return getattr(_local, "location", DEFAULT_LOCATION)
+    return _location
 
 
 def set_user_id(user_id: str) -> None:
     """前端登录后调用，绑定当前会话的用户 ID。"""
-    _local.user_id = user_id
+    global _user_id
+    _user_id = user_id
 
 
 def set_location(location: Optional[str]) -> None:
     """前端可调用，设置当前会话的用户位置（如手动切换城市）。"""
-    _local.location = location
+    global _location
+    _location = location
 
 
 def reset() -> None:
-    """重置当前线程的上下文（登出/测试清理时用）。"""
-    _local.user_id = DEFAULT_USER_ID
-    _local.location = DEFAULT_LOCATION
+    """重置上下文（登出/测试清理时用）。"""
+    global _user_id, _location
+    _user_id = DEFAULT_USER_ID
+    _location = DEFAULT_LOCATION
