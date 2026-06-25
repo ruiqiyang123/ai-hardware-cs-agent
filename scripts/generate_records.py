@@ -8,6 +8,10 @@
 1. 扩展用户数 / 月份范围
 2. 在评测时构造特定场景的数据
 3. 面试时能讲清楚数据是怎么来的
+
+月份范围：从 2025-01 动态生成到「脚本运行当月」，保证「生成本月报告」始终
+能查到当月真实数据。耗材采用「递减 + 到阈值换件回升」的模型，避免长期使用
+后耗材为负，也更贴合真实产品（用户会更换耗材）。
 """
 import csv
 import random
@@ -30,7 +34,26 @@ USER_PROFILES = {
     "1010": {"house": "130㎡四居 | 三代同堂 | 通体砖", "base_coverage": 80},
 }
 
-MONTHS = [f"2025-{m:02d}" for m in range(1, 13)]
+
+def build_months() -> list[str]:
+    """动态生成月份列表：从 2025-01 到脚本运行当月。
+
+    这样「生成本月报告」永远能查到当月数据，不用手动改脚本。
+    """
+    start = datetime(2025, 1, 1)
+    now = datetime.now()
+    months: list[str] = []
+    y, m = start.year, start.month
+    while (y, m) <= (now.year, now.month):
+        months.append(f"{y}-{m:02d}")
+        m += 1
+        if m > 12:
+            m = 1
+            y += 1
+    return months
+
+
+MONTHS = build_months()
 
 
 def gen_feature(profile: dict, month_idx: int) -> str:
@@ -58,10 +81,17 @@ def gen_efficiency(profile: dict, month_idx: int) -> str:
 
 
 def gen_consumables(month_idx: int) -> str:
-    """生成耗材字段：随月份推进，耗材逐渐消耗。"""
-    # 主刷寿命随时间递减
-    brush_life = max(10, 365 - month_idx * 25 + random.randint(-10, 10))
-    hepa = max(10, 100 - month_idx * 7 - random.randint(0, 5))
+    """生成耗材字段：随月份推进耗材递减，到阈值后模拟用户换件回升。
+
+    用「取模」实现周期性换件：耗材每 N 个月走完一个完整寿命周期后重置，
+    比单纯线性递减更真实（真实用户会更换主刷/滤网），也避免长周期后耗材为 0。
+    """
+    # 主刷寿命：周期 ~12 个月换一次（365 天寿命，每月消耗 ~30 天）
+    brush_cycle = (month_idx - 1) % 12
+    brush_life = max(15, 365 - brush_cycle * 30 + random.randint(-10, 10))
+    # HEPA 滤网：周期 ~6 个月换一次（100% → 降到阈值换新）
+    hepa_cycle = (month_idx - 1) % 6
+    hepa = max(15, 100 - hepa_cycle * 14 - random.randint(0, 5))
     parts = [
         f"主刷寿命:剩余{brush_life}天",
         f"HEPA滤网:剩余{hepa}%",
