@@ -18,26 +18,87 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 轻量自定义样式：聊天气泡留白、侧边栏字号、移除冗余顶部空白
+# 自定义样式：渐变标题、气泡阴影、卡片化侧边栏，提升视觉精致度
 st.markdown(
     """
     <style>
-      /* 缩短页面顶部留白 */
-      .block-container { padding-top: 2rem; padding-bottom: 5rem; }
-      /* 让聊天气泡更舒展 */
-      [data-testid="stChatMessage"] { padding: 0.5rem 0.75rem; }
-      /* 侧边栏标题更紧凑 */
-      [data-testid="stSidebar"] h2 { margin-top: 0.5rem; margin-bottom: 0.5rem; font-size: 1.05rem; }
-      [data-testid="stSidebar"] h3 { font-size: 0.95rem; }
-      /* 聊天输入框上边距 */
-      [data-testid="stChatInput"] { border-radius: 0.75rem; }
+      /* —— 全局布局：收窄顶部留白，居中最大宽度 —— */
+      .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 5rem;
+        max-width: 900px;
+      }
+
+      /* —— 主标题：渐变色，更有品牌感 —— */
+      h1 {
+        background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+      }
+
+      /* —— 聊天气泡：圆角 + 轻阴影，更舒展 —— */
+      [data-testid="stChatMessage"] {
+        padding: 0.6rem 0.85rem;
+        border-radius: 0.85rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+      [data-testid="stChatMessageAvatarUser"] { box-shadow: none; }
+      [data-testid="stChatMessageAvatarAssistant"] { box-shadow: none; }
+
+      /* —— 侧边栏：卡片化分组 —— */
+      [data-testid="stSidebar"] {
+        background-color: #F7F9FC;
+      }
+      [data-testid="stSidebar"] section[data-testid="stVerticalBlock"] > div {
+        background-color: #FFFFFF;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.6rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      }
+      [data-testid="stSidebar"] h2 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+      }
+      [data-testid="stSidebar"] h3 { font-size: 0.9rem; }
+
+      /* —— 示例问题按钮：去掉默认边框，做成胶囊 —— */
+      [data-testid="stSidebar"] button[kind="secondary"] {
+        border-radius: 1.2rem;
+        text-align: left;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.85rem;
+        border: 1px solid #E5E9F0;
+        background-color: #FFFFFF;
+        transition: all 0.15s;
+      }
+      [data-testid="stSidebar"] button[kind="secondary"]:hover {
+        background-color: #EEF4FF;
+        border-color: #2E7CF6;
+        color: #2E7CF6;
+      }
+
+      /* —— 聊天输入框：圆角 —— */
+      [data-testid="stChatInput"] textarea {
+        border-radius: 0.75rem;
+      }
+
+      /* —— st.status 推理过程容器：略微缩进 —— */
+      [data-testid="stStatusWidget"] {
+        margin: 0.25rem 0;
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 st.title("🤖 智扫通机器人智能客服")
-st.caption("LangGraph ReAct Agent + RAG 检索增强　|　扫地机器人售后场景")
+st.caption("LangGraph ReAct Agent + RAG 检索增强　·　扫地机器人售后场景")
 
 # ============================================================
 # API Key 配置（环境变量 vs 侧边栏手填，二选一）
@@ -175,13 +236,16 @@ with st.sidebar:
 
     st.divider()
     st.markdown("**💡 试试这些问题：**")
-    for q in [
-        "扫地机器人无法正常回充，该怎么排查？",
-        "家里有宠物，应该怎么维护主刷和滤网？",
-        "我所在城市的天气适合拖地吗？",
-        "帮我生成本月使用报告，并给出保养建议。",
-    ]:
-        st.markdown(f"- {q}")
+    EXAMPLE_QUESTIONS = [
+        ("🔧", "扫地机器人无法正常回充，该怎么排查？"),
+        ("🧹", "家里有宠物，应该怎么维护主刷和滤网？"),
+        ("🌤️", "我所在城市的天气适合拖地吗？"),
+        ("📊", "帮我生成本月使用报告，并给出保养建议。"),
+    ]
+    for icon, q in EXAMPLE_QUESTIONS:
+        if st.button(f"{icon}　{q}", key=f"q_{q[:6]}", use_container_width=True):
+            st.session_state["pending_prompt"] = q
+            st.rerun()
 
 
 # ============================================================
@@ -212,7 +276,11 @@ for msg in st.session_state["messages"]:
         st.markdown(msg["content"])
 
 # 输入与流式响应
+# 支持两种输入：chat_input 直接打字，或侧边栏示例问题按钮（pending_prompt）
 prompt = st.chat_input("输入你的问题，例如：扫地机器人无法回充怎么办？")
+if not prompt and st.session_state.get("pending_prompt"):
+    prompt = st.session_state["pending_prompt"]
+    st.session_state["pending_prompt"] = None  # 消费掉，避免回放
 
 if prompt:
     if agent is None:
@@ -223,30 +291,42 @@ if prompt:
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
         with st.chat_message("assistant", avatar="🤖"):
-            # 用 expander 折叠 Agent 的中间推理步骤（思考 + 工具调用 + 结果）
-            trace_expander = st.expander("🧠 Agent 推理过程（点击展开）", expanded=False)
+            # st.status 容器：实时展示 Agent 推理过程（思考/工具调用/工具返回），
+            # 收到最终回答后自动收起，只把答案留在 chat 区。像真 Agent 的实时推理流。
+            status = st.status("🤔 正在思考...", expanded=True)
             answer_placeholder = st.empty()
 
             answer_text = ""
             step_idx = 0
+            status_finalized = False
 
             for kind, content in agent.execute_stream(prompt):
                 if kind == "answer":
+                    # 收到第一个回答字符：收起推理过程，开始逐字输出答案
+                    if not status_finalized:
+                        status.update(label="✅ 推理完成", state="complete", expanded=False)
+                        status_finalized = True
                     answer_text += content
                     answer_placeholder.markdown(answer_text)
                 else:
                     step_idx += 1
-                    with trace_expander:
-                        if kind == "thought":
-                            st.markdown(f"**Step {step_idx} · 💭 思考**\n\n{content}")
-                        elif kind == "tool_call":
-                            st.markdown(f"**Step {step_idx} · 🔧 工具调用**\n\n{content}")
-                        elif kind == "tool_result":
-                            st.markdown(f"**Step {step_idx} · 📥 工具返回**\n\n{content}")
+                    if kind == "thought":
+                        status.update(label=f"💭 正在分析（第 {step_idx} 步）...")
+                        status.markdown(f"**💭 思考**：{content}")
+                    elif kind == "tool_call":
+                        status.update(label=f"🔧 正在调用工具（第 {step_idx} 步）...")
+                        status.markdown(content)
+                    elif kind == "tool_result":
+                        status.update(label=f"📥 获取到信息（第 {step_idx} 步）...")
+                        status.markdown(content)
 
-            # 若 Agent 没产出最终回答（异常分支），给提示
+            # 兜底：Agent 没产出最终回答
             if not answer_text:
                 answer_text = "⚠️ 未能生成有效回答，请重试或换一种问法。"
                 answer_placeholder.markdown(answer_text)
+                status.update(label="⚠️ 未能生成有效回答", state="error", expanded=False)
+            elif not status_finalized:
+                # 有内容但未走 answer 分支（理论上不会，保险处理）
+                status.update(label="✅ 推理完成", state="complete", expanded=False)
 
         st.session_state["messages"].append({"role": "assistant", "content": answer_text})
