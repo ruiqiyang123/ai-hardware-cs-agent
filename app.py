@@ -128,6 +128,9 @@ def get_or_build_agent() -> ReactAgent:
     try:
         chat_model = build_chat_model(**kwargs)
         configure_rag_model(chat_model)
+        # 首次部署时 chroma_db 是空的（gitignore），需要从 data/ 加载文档建索引。
+        # 加锁防止 Streamlit rerun 触发并发初始化。
+        _ensure_knowledge_base_loaded()
         st.session_state["agent"] = ReactAgent(chat_model=chat_model)
         st.session_state["agent_config_sig"] = sig
         logger.info(f"[app]重建 Agent，配置签名={sig}")
@@ -136,6 +139,19 @@ def get_or_build_agent() -> ReactAgent:
         if "agent" not in st.session_state:
             st.session_state["agent"] = None
     return st.session_state.get("agent")
+
+
+@st.cache_resource(show_spinner="📚 首次启动正在初始化知识库（约 30-60 秒）...")
+def _ensure_knowledge_base_loaded() -> bool:
+    """首次部署时自动把 data/ 下的文档加载进 Chroma。
+
+    chroma_db/ 被 .gitignore，Streamlit Cloud 部署后向量库是空的。
+    用 @st.cache_resource 保证整个 server 进程只跑一次，且并发 rerun 不会重入。
+    向量库通过 MD5 文件去重，重复跑也是幂等的。
+    """
+    from rag.vector_store import VectorStoreService
+    VectorStoreService().load_document()
+    return True
 
 
 # ============================================================

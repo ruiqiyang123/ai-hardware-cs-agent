@@ -47,11 +47,14 @@ class DemoReadinessTest(unittest.TestCase):
     def test_readme_has_external_runbook(self):
         readme = read_text("README.md")
 
-        self.assertIn("git clone https://github.com/ruiqiyang123/smart-hardware-rag-agent.git", readme)
-        self.assertIn("cp .env.example .env", readme)
+        # 仓库已重命名为 ai-hardware-cs-agent，README 同步更新
+        self.assertIn("git clone https://github.com/ruiqiyang123/ai-hardware-cs-agent.git", readme)
+        self.assertIn("pip install -r requirements.txt", readme)
         self.assertIn("python scripts/init_knowledge_base.py", readme)
         self.assertIn("streamlit run app.py", readme)
-        self.assertIn("Demo 使用流程", readme)
+        # 在线 / 本地两种体验路径
+        self.assertIn("在线体验", readme)
+        self.assertIn("本地启动", readme)
 
     def test_root_license_file_is_not_exposed(self):
         self.assertFalse((ROOT / "LICENSE").exists())
