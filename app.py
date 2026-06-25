@@ -18,79 +18,27 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 自定义样式：渐变标题、气泡阴影、卡片化侧边栏，提升视觉精致度
+# 轻量样式：只做「留白 + 宽度 + 圆角」这类不与框架打架的微调，不堆 hack CSS。
+# 设计取向参考 ChatGPT/官方 Streamlit Gallery：克制留白、单一主色、干净即可。
 st.markdown(
     """
     <style>
-      /* —— 全局布局：收窄顶部留白，居中最大宽度 —— */
+      /* 内容居中收窄，留白更舒展（参考 ChatGPT ~768px 内容区） */
       .block-container {
-        padding-top: 1.5rem;
+        padding-top: 2rem;
         padding-bottom: 5rem;
-        max-width: 900px;
+        max-width: 820px;
       }
-
-      /* —— 主标题：渐变色，更有品牌感 —— */
-      h1 {
-        background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 700;
-      }
-
-      /* —— 聊天气泡：圆角 + 轻阴影，更舒展 —— */
+      /* 聊天气泡轻圆角，去掉默认硬边感 */
       [data-testid="stChatMessage"] {
         padding: 0.6rem 0.85rem;
-        border-radius: 0.85rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      }
-      [data-testid="stChatMessageAvatarUser"] { box-shadow: none; }
-      [data-testid="stChatMessageAvatarAssistant"] { box-shadow: none; }
-
-      /* —— 侧边栏：卡片化分组 —— */
-      [data-testid="stSidebar"] {
-        background-color: #F7F9FC;
-      }
-      [data-testid="stSidebar"] section[data-testid="stVerticalBlock"] > div {
-        background-color: #FFFFFF;
         border-radius: 0.75rem;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.6rem;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
       }
+      /* 侧边栏分组标题更紧凑 */
       [data-testid="stSidebar"] h2 {
-        margin-top: 0;
+        margin-top: 0.4rem;
         margin-bottom: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1F2937;
-      }
-      [data-testid="stSidebar"] h3 { font-size: 0.9rem; }
-
-      /* —— 示例问题按钮：去掉默认边框，做成胶囊 —— */
-      [data-testid="stSidebar"] button[kind="secondary"] {
-        border-radius: 1.2rem;
-        text-align: left;
-        font-size: 0.85rem;
-        padding: 0.4rem 0.85rem;
-        border: 1px solid #E5E9F0;
-        background-color: #FFFFFF;
-        transition: all 0.15s;
-      }
-      [data-testid="stSidebar"] button[kind="secondary"]:hover {
-        background-color: #EEF4FF;
-        border-color: #2E7CF6;
-        color: #2E7CF6;
-      }
-
-      /* —— 聊天输入框：圆角 —— */
-      [data-testid="stChatInput"] textarea {
-        border-radius: 0.75rem;
-      }
-
-      /* —— st.status 推理过程容器：略微缩进 —— */
-      [data-testid="stStatusWidget"] {
-        margin: 0.25rem 0;
+        font-size: 1.02rem;
       }
     </style>
     """,
