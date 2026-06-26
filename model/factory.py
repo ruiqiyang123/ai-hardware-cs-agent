@@ -22,7 +22,7 @@ from model.local_embeddings import LocalHashEmbeddings
 from utils.config_handler import rag_conf
 from utils.logger_handler import logger
 
-load_dotenv()
+load_dotenv(override=True)
 
 _DEFAULT_CHAT_PROVIDER = "dashscope"
 _DEFAULT_EMBEDDING_PROVIDER = "dashscope"

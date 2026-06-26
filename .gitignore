@@ -30,6 +30,9 @@ htmlcov/
 .env.*
 !.env.example
 
+# 个人面试准备文档，仅本地保存，不上传 GitHub
+INTERVIEW_PREP.md
+
 # =========================
 # Logs
 # =========================
