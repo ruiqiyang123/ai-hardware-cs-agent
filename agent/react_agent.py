@@ -1,4 +1,4 @@
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, List, Dict
 
 from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.prebuilt import create_react_agent
@@ -6,7 +6,9 @@ from langgraph.prebuilt import create_react_agent
 from model.factory import chat_model as _default_chat_model
 from agent.tools.agent_tools import (rag_summarize, get_weather, get_user_location, get_user_id,
                                      get_current_month, fetch_external_data, fill_context_for_report)
+from agent.tools.profile_tools import get_user_profile
 from agent.tools.middleware import build_agent_prompt
+from agent.services.memory_compression import MessageCompressionService
 
 
 # 流式输出事件类型，前端按此分类渲染：
@@ -18,32 +20,44 @@ StreamEvent = Tuple[str, str]
 
 
 class ReactAgent:
-    def __init__(self, chat_model=None):
+    def __init__(self, chat_model=None, max_turns: int = 6):
         """构建 ReAct Agent。
 
         Args:
             chat_model: 可选，按会话注入的 chat 模型（Web 前端通过 build_chat_model 构建）。
                         未传则使用模块级默认实例（基于环境变量，供 CLI / 评测脚本使用）。
+            max_turns: 滑动窗口保留的最大对话轮数（默认 6 轮），超过后自动压缩旧对话。
         """
         self.agent = create_react_agent(
             model=chat_model or _default_chat_model,
             tools=[rag_summarize, get_weather, get_user_location, get_user_id,
-                   get_current_month, fetch_external_data, fill_context_for_report],
+                   get_current_month, fetch_external_data, fill_context_for_report,
+                   get_user_profile],
             prompt=build_agent_prompt,
             version="v2",
         )
+        self.compression_service = MessageCompressionService(max_turns=max_turns)
 
-    def execute_stream(self, query: str) -> Iterator[StreamEvent]:
+    def execute_stream(self, query: str, chat_history: List[Dict[str, str]] = None) -> Iterator[StreamEvent]:
         """流式执行，按事件类型 yield。
 
         改造前：所有 AIMessage 都 yield 为字符串，"思考: xxx"和最终回答混在一起
         污染对话流。改造后区分四类事件，前端可分区渲染：思考/工具调用折叠展示，
         最终回答独占 chat 区。
+
+        Args:
+            query: 用户当前输入的问题
+            chat_history: 历史对话列表，格式为 [{"role": "user", "content": "..."}, ...]
         """
+        # 构建输入消息（历史 + 当前问题）
+        messages = list(chat_history or [])  # 复制避免修改原列表
+        messages.append({"role": "user", "content": query})
+
+        # 压缩消息（如果超过阈值）
+        compressed_messages = self.compression_service.compress_messages(messages)
+
         input_dict = {
-            "messages": [
-                {"role": "user", "content": query},
-            ]
+            "messages": compressed_messages
         }
 
         seen_ai_ids: set[str] = set()
