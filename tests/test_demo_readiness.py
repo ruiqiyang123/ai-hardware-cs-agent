@@ -39,6 +39,13 @@ class DemoReadinessTest(unittest.TestCase):
 
         self.assertIn("load_dotenv(override=False)", model_factory)
 
+    def test_streamlit_demo_is_fixed_to_mimo(self):
+        app = read_text("app.py")
+
+        self.assertIn('selected_provider = "mimo"', app)
+        self.assertNotIn('st.radio(\n        "聊天模型"', app)
+        self.assertNotIn("阿里云 DashScope", app)
+
     def test_init_script_and_env_example_exist(self):
         self.assertTrue((ROOT / "scripts/init_knowledge_base.py").exists())
 
@@ -46,6 +53,8 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertIn("DASHSCOPE_API_KEY=", env_example)
         self.assertIn("MIMO_API_KEY=", env_example)
         self.assertIn("MIMO_BASE_URL=", env_example)
+        self.assertIn("MIMO_CHAT_MODEL=tmimo-v2.5-pro", env_example)
+        self.assertIn("CHAT_PROVIDER=mimo", env_example)
         self.assertIn("EMBEDDING_PROVIDER=", env_example)
         self.assertTrue((ROOT / "model/local_embeddings.py").exists())
 

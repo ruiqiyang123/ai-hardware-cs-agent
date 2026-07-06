@@ -69,24 +69,9 @@ def _runtime_secret(name: str) -> Optional[str]:
     return str(secret_value) if secret_value else None
 
 
-env_dashscope_key = _runtime_secret("DASHSCOPE_API_KEY")
 env_mimo_key = _runtime_secret("MIMO_API_KEY")
-env_chat_provider = _runtime_secret("CHAT_PROVIDER")
 env_mimo_base_url = _runtime_secret("MIMO_BASE_URL") or DEFAULT_MIMO_BASE_URL
 env_mimo_model = _runtime_secret("MIMO_CHAT_MODEL") or DEFAULT_MIMO_CHAT_MODEL
-
-
-def _default_provider_index() -> int:
-    provider = (env_chat_provider or "").lower()
-    if provider in {"dashscope", "qwen", "tongyi"}:
-        return 1
-    if provider in {"mimo", "openai"}:
-        return 0
-    if env_mimo_key:
-        return 0
-    if env_dashscope_key:
-        return 1
-    return 0
 
 with st.sidebar:
     st.header("⚙️ 模型配置")
@@ -98,62 +83,33 @@ with st.sidebar:
             - [mimo.xiaomi.com](https://mimo.xiaomi.com/)
             - Base URL: `https://token-plan-sgp.xiaomimimo.com/v1`
             - Token Plan 常用模型：`tmimo-v2.5-pro`
-
-            **阿里云百炼**
-            - [bailian.console.aliyun.com](https://bailian.console.aliyun.com/)
-            - 默认聊天模型：`qwen-plus`
             """
         )
 
-    provider_label = st.radio(
-        "聊天模型",
-        ["小米 MiMo", "阿里云 DashScope"],
-        index=_default_provider_index(),
-        key="chat_provider_radio",
-    )
-    selected_provider = "mimo" if provider_label == "小米 MiMo" else "dashscope"
-
-    dashscope_key = env_dashscope_key
+    selected_provider = "mimo"
+    dashscope_key = None
     mimo_key = env_mimo_key
     mimo_base_url = env_mimo_base_url
     mimo_model_name = env_mimo_model
 
-    if selected_provider == "mimo":
-        if env_mimo_key:
-            st.success("✅ MiMo 共享 API Key 已就绪")
-        elif env_dashscope_key:
-            st.info("当前云端有 DashScope 共享 Key；你已选择 MiMo，请填写 MiMo API Key。")
-        else:
-            st.warning("⚠️ 请填写 MiMo API Key 后再开始对话")
-
-        manual_mimo_key = st.text_input(
-            "MiMo API Key",
-            type="password",
-            key="mimo_key_input",
-            placeholder="留空则使用共享 Key" if env_mimo_key else "粘贴 MiMo Token Plan API Key",
-        )
-        if manual_mimo_key:
-            mimo_key = manual_mimo_key
-        mimo_base_url = st.text_input("MiMo Base URL", value=env_mimo_base_url, key="mimo_base_input")
-        mimo_model_name = st.text_input("MiMo 模型", value=env_mimo_model, key="mimo_model_input")
+    st.caption(f"当前聊天模型：小米 MiMo · `{mimo_model_name}`")
+    if env_mimo_key:
+        st.success("✅ MiMo 共享 API Key 已就绪")
     else:
-        if env_dashscope_key:
-            st.success("✅ DashScope 共享 API Key 已就绪")
-        elif env_mimo_key:
-            st.info("当前云端有 MiMo 共享 Key；你已选择 DashScope，请填写 DashScope API Key。")
-        else:
-            st.warning("⚠️ 请填写 DashScope API Key 后再开始对话")
+        st.warning("⚠️ 请填写 MiMo API Key 后再开始对话")
 
-        manual_dashscope_key = st.text_input(
-            "DashScope API Key",
-            type="password",
-            key="dashscope_key_input",
-            placeholder="留空则使用共享 Key" if env_dashscope_key else "粘贴 DashScope API Key",
-        )
-        if manual_dashscope_key:
-            dashscope_key = manual_dashscope_key
+    manual_mimo_key = st.text_input(
+        "MiMo API Key",
+        type="password",
+        key="mimo_key_input",
+        placeholder="留空则使用共享 Key" if env_mimo_key else "粘贴 MiMo Token Plan API Key",
+    )
+    if manual_mimo_key:
+        mimo_key = manual_mimo_key
+    mimo_base_url = st.text_input("MiMo Base URL", value=env_mimo_base_url, key="mimo_base_input")
+    mimo_model_name = st.text_input("MiMo 模型", value=env_mimo_model, key="mimo_model_input")
 
-    st.caption("💡 共享额度有限；如果生成失败，可以切换模型或填写自己的 Key。")
+    st.caption("💡 求职 Demo 默认使用 MiMo 共享额度；如连续失败，可临时填写新的 MiMo Key。")
     st.divider()
 
 

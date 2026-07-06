@@ -60,9 +60,12 @@ python -m venv .venv && source .venv/bin/activate
 # 3. 安装依赖
 pip install -r requirements.txt
 
-# 4. 配置 API Key（二选一）
-export DASHSCOPE_API_KEY="your-key"         # 阿里云百炼（默认，含 Embedding）
-# 或 export MIMO_API_KEY="your-key"         # 小米 MiMo，搭配本地 embedding
+# 4. 配置 API Key（默认走小米 MiMo）
+export MIMO_API_KEY="your-key"
+export MIMO_BASE_URL="https://token-plan-sgp.xiaomimimo.com/v1"
+export MIMO_CHAT_MODEL="tmimo-v2.5-pro"
+export CHAT_PROVIDER="mimo"
+export EMBEDDING_PROVIDER="local"
 
 # 5. 初始化知识库 → 启动
 python scripts/init_knowledge_base.py
@@ -132,7 +135,7 @@ A: 📊 张先生 2025-06 使用报告
 ```
 
 模型支持：
-- **Chat**：阿里云百炼 `ChatTongyi`（默认） / 小米 MiMo `ChatOpenAI` 兼容接口
+- **Chat**：小米 MiMo `ChatOpenAI` 兼容接口（Demo 默认）
 - **Embedding**：DashScope `text-embedding-v4` / 本地哈希 Embedding（无 key 时跑通 demo）
 
 ## 工具说明

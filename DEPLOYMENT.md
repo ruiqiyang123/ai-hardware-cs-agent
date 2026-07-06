@@ -6,7 +6,7 @@
 
 1. **Streamlit Cloud 账号**：访问 [share.streamlit.io](https://share.streamlit.io/) 注册
 2. **GitHub 仓库**：确保项目代码已推送到 GitHub
-3. **API Key**：准备 DashScope 或 MiMo API Key
+3. **API Key**：准备 MiMo API Key
 
 ## 部署步骤
 
@@ -32,15 +32,7 @@ git push origin main
 
 ### 4. 配置环境变量（可选）
 
-如果你希望部署后使用固定的 API Key，可以在 "Advanced settings" 中设置：
-
-```bash
-DASHSCOPE_API_KEY=your-api-key
-CHAT_PROVIDER=dashscope
-EMBEDDING_PROVIDER=dashscope
-```
-
-或者使用 MiMo：
+如果你希望部署后开箱即用，可以在 "Advanced settings" 中设置：
 
 ```bash
 MIMO_API_KEY=your-mimo-key
@@ -50,7 +42,7 @@ CHAT_PROVIDER=mimo
 EMBEDDING_PROVIDER=local
 ```
 
-**推荐做法**：不设置环境变量，让用户在侧边栏输入临时 API Key。
+**推荐做法**：求职 Demo 期间设置 MiMo 共享 Key，让面试官打开页面即可试用。
 
 ### 5. 点击 Deploy
 
