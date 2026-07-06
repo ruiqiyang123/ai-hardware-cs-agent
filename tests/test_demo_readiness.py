@@ -45,6 +45,10 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertIn('selected_provider = "mimo"', app)
         self.assertNotIn('st.radio(\n        "聊天模型"', app)
         self.assertNotIn("阿里云 DashScope", app)
+        self.assertNotIn("MiMo API Key", app)
+        self.assertNotIn("MiMo Base URL", app)
+        self.assertNotIn("如何获取 API Key", app)
+        self.assertIn("访客无需配置", app)
 
     def test_init_script_and_env_example_exist(self):
         self.assertTrue((ROOT / "scripts/init_knowledge_base.py").exists())

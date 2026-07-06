@@ -15,7 +15,8 @@ class ErrorMessagesTest(unittest.TestCase):
         message = format_agent_error(ValueError("Invalid API-key provided"))
 
         self.assertIn("API Key", message)
-        self.assertIn("侧边栏", message)
+        self.assertIn("联系项目作者", message)
+        self.assertNotIn("侧边栏", message)
 
 
 if __name__ == "__main__":

@@ -12,16 +12,16 @@ def format_agent_error(error: Exception) -> str:
     if any(token in raw for token in ["invalid api", "api-key", "apikey", "unauthorized", "forbidden"]):
         return (
             "⚠️ 模型服务暂时不可用：当前 API Key 可能无效或权限不足。\n\n"
-            "你可以稍后重试，或在侧边栏填写自己的 DashScope / MiMo API Key 后再试。"
+            "请稍后重试；如果连续失败，请联系项目作者检查后台 MiMo 配置。"
         )
 
     if any(token in raw for token in ["quota", "rate limit", "throttl", "insufficient", "余额", "限流"]):
         return (
             "⚠️ 模型服务暂时不可用：共享额度可能不足或触发限流。\n\n"
-            "你可以稍后重试，或在侧边栏填写自己的 DashScope / MiMo API Key 后再试。"
+            "请稍后重试；如果连续失败，请联系项目作者检查后台 MiMo 额度。"
         )
 
     return (
         "⚠️ 模型服务暂时不可用，未能生成有效回答。\n\n"
-        "请稍后重试；如果连续失败，可以在侧边栏切换或填写自己的 API Key。"
+        "请稍后重试；如果连续失败，请联系项目作者检查后台 MiMo 服务。"
     )

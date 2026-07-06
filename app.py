@@ -54,7 +54,7 @@ st.title("🤖 智扫通机器人智能客服")
 st.caption("LangGraph ReAct Agent + RAG 检索增强　·　扫地机器人售后场景")
 
 # ============================================================
-# API Key 配置（共享 Key + 侧边栏可覆盖）
+# 模型配置（后台共享 Key，访客无感使用）
 # ============================================================
 def _runtime_secret(name: str) -> Optional[str]:
     """读取环境变量 / Streamlit Secrets，避免 Cloud 与本地配置方式不一致。"""
@@ -72,44 +72,19 @@ def _runtime_secret(name: str) -> Optional[str]:
 env_mimo_key = _runtime_secret("MIMO_API_KEY")
 env_mimo_base_url = _runtime_secret("MIMO_BASE_URL") or DEFAULT_MIMO_BASE_URL
 env_mimo_model = _runtime_secret("MIMO_CHAT_MODEL") or DEFAULT_MIMO_CHAT_MODEL
+selected_provider = "mimo"
+dashscope_key = None
+mimo_key = env_mimo_key
+mimo_base_url = env_mimo_base_url
+mimo_model_name = env_mimo_model
 
 with st.sidebar:
-    st.header("⚙️ 模型配置")
-
-    with st.expander("📖 如何获取 API Key", expanded=False):
-        st.markdown(
-            """
-            **小米 MiMo**
-            - [mimo.xiaomi.com](https://mimo.xiaomi.com/)
-            - Base URL: `https://token-plan-sgp.xiaomimimo.com/v1`
-            - Token Plan 常用模型：`tmimo-v2.5-pro`
-            """
-        )
-
-    selected_provider = "mimo"
-    dashscope_key = None
-    mimo_key = env_mimo_key
-    mimo_base_url = env_mimo_base_url
-    mimo_model_name = env_mimo_model
-
-    st.caption(f"当前聊天模型：小米 MiMo · `{mimo_model_name}`")
+    st.header("⚙️ 系统状态")
     if env_mimo_key:
-        st.success("✅ MiMo 共享 API Key 已就绪")
+        st.success("✅ 后台 MiMo 已就绪，访客无需配置")
     else:
-        st.warning("⚠️ 请填写 MiMo API Key 后再开始对话")
-
-    manual_mimo_key = st.text_input(
-        "MiMo API Key",
-        type="password",
-        key="mimo_key_input",
-        placeholder="留空则使用共享 Key" if env_mimo_key else "粘贴 MiMo Token Plan API Key",
-    )
-    if manual_mimo_key:
-        mimo_key = manual_mimo_key
-    mimo_base_url = st.text_input("MiMo Base URL", value=env_mimo_base_url, key="mimo_base_input")
-    mimo_model_name = st.text_input("MiMo 模型", value=env_mimo_model, key="mimo_model_input")
-
-    st.caption("💡 求职 Demo 默认使用 MiMo 共享额度；如连续失败，可临时填写新的 MiMo Key。")
+        st.error("⚠️ 后台 MiMo 未配置，请联系项目作者")
+    st.caption(f"模型：小米 MiMo · `{mimo_model_name}`")
     st.divider()
 
 
@@ -250,7 +225,7 @@ def get_or_build_agent() -> ReactAgent | None:
         logger.info(f"[app]重建 Agent，配置签名={sig}")
         return st.session_state["agent"]
     except ValueError as e:
-        st.error(f"模型配置错误：{e}")
+        st.error(f"后台模型配置错误：{e}")
         return None
 
 
@@ -441,7 +416,7 @@ if not prompt and st.session_state.get("pending_prompt"):
 
 if prompt:
     if agent is None:
-        st.error("⚠️ 请先在侧边栏配置 API Key")
+        st.error("⚠️ 后台 MiMo 未配置，请联系项目作者")
     else:
         with st.chat_message("user", avatar="🧑"):
             st.markdown(prompt)

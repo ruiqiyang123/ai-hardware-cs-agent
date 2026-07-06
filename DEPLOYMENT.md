@@ -30,7 +30,7 @@ git push origin main
 4. Main file path：`app.py`
 5. Python version：`3.11`
 
-### 4. 配置环境变量（可选）
+### 4. 配置后台环境变量
 
 如果你希望部署后开箱即用，可以在 "Advanced settings" 中设置：
 
