@@ -10,11 +10,25 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 
 from rag.vector_store import VectorStoreService
+from rag.keyword_fallback import get_keyword_fallback_docs
 from rag.source_formatter import format_reference_sources
 from utils.prompt_loader import load_rag_prompts
 from langchain_core.prompts import PromptTemplate
 from model.factory import chat_model as _default_chat_model
 from utils.logger_handler import logger
+from utils.path_tool import get_abs_path
+
+
+def _merge_docs(primary_docs: list[Document], secondary_docs: list[Document]) -> list[Document]:
+    merged: list[Document] = []
+    seen = set()
+    for doc in [*primary_docs, *secondary_docs]:
+        key = (doc.page_content, doc.metadata.get("source"))
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(doc)
+    return merged
 
 
 class RagSummarizeService:
@@ -36,6 +50,9 @@ class RagSummarizeService:
 
     def rag_summarize(self, query: str) -> str:
         context_docs = self.retriever_docs(query)
+        fallback_docs = get_keyword_fallback_docs(query, get_abs_path("data"))
+        if fallback_docs:
+            context_docs = _merge_docs(fallback_docs, context_docs)
 
         if not context_docs:
             logger.warning(f"[rag_summarize]未检索到相关资料，query={query}")

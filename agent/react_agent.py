@@ -10,6 +10,7 @@ from agent.tools.profile_tools import get_user_profile
 from agent.tools.middleware import build_agent_prompt
 from agent.services.memory_compression import MessageCompressionService
 from agent.message_builder import build_agent_messages
+from agent.stream_policy import should_short_circuit_rag_answer
 
 
 # 流式输出事件类型，前端按此分类渲染：
@@ -63,20 +64,7 @@ class ReactAgent:
         seen_ai_ids: set[str] = set()
         seen_tool_ids: set[str] = set()
 
-        all_chunks = list(self.agent.stream(input_dict, stream_mode="values"))
-        if not all_chunks:
-            return
-
-        # 最后一帧的最后一条 AIMessage 才是最终回答；前面所有 AIMessage 都是中间思考
-        final_chunk = all_chunks[-1]
-        final_messages = final_chunk.get("messages", [])
-        final_answer_id = None
-        for msg in reversed(final_messages):
-            if isinstance(msg, AIMessage) and msg.content and not getattr(msg, "tool_calls", None):
-                final_answer_id = getattr(msg, "id", None)
-                break
-
-        for chunk in all_chunks:
+        for chunk in self.agent.stream(input_dict, stream_mode="values"):
             for msg in chunk.get("messages", []):
                 msg_id = getattr(msg, "id", None)
                 if not msg_id:
@@ -90,10 +78,12 @@ class ReactAgent:
                     content = (msg.content or "").strip()
                     tool_calls = getattr(msg, "tool_calls", None) or []
 
-                    # 最终回答：仅最后一条无 tool_call 的 AIMessage
-                    if msg_id == final_answer_id:
+                    # 无 tool_call 的 AIMessage 视为最终回答。RAG 场景会在 ToolMessage
+                    # 返回时更早收口，避免 MiMo 重复检索或误走无关工具。
+                    if not tool_calls:
                         if content:
                             yield ("answer", content)
+                            return
                     else:
                         # 中间思考：可能伴随工具调用
                         if content:
@@ -112,6 +102,9 @@ class ReactAgent:
                     # 工具结果可能很长，截断展示
                     preview = tool_output if len(tool_output) <= 400 else tool_output[:400] + "...(已截断)"
                     yield ("tool_result", f"`{tool_name}` 返回：{preview}")
+                    if should_short_circuit_rag_answer(tool_name, tool_output):
+                        yield ("answer", tool_output)
+                        return
 
 
 if __name__ == '__main__':
