@@ -10,7 +10,7 @@ from utils.config_handler import agent_conf
 from utils.path_tool import get_abs_path
 from utils.session_context import current_user_id, current_location
 from agent.services.weather_service import fetch_weather
-from agent.services.usage_records import load_usage_records
+from agent.services.usage_records import find_usage_record, load_usage_records
 
 rag = RagSummarizeService()
 
@@ -119,12 +119,7 @@ def generate_external_data():
 @tool(description="从外部系统中获取指定用户在指定月份的使用记录，以纯字符串形式返回。未检索到返回空字符串")
 def fetch_external_data(user_id: str, month: str) -> str:
     generate_external_data()
-
-    try:
-        return str(external_data[user_id][month])
-    except KeyError:
-        logger.warning(f"[fetch_external_data]未能检索到用户：{user_id}在{month}的使用记录数据")
-        return ""
+    return find_usage_record(external_data, user_id, month, fallback_to_latest=True)
 
 
 @tool(description="无入参，调用后触发中间件自动为报告生成场景动态注入上下文信息，为后续提示词切换提供上下文信息")

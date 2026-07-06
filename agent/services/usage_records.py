@@ -47,11 +47,36 @@ def load_usage_records(path: str) -> dict:
     return records
 
 
+def find_usage_record(
+    records: dict,
+    user_id: str,
+    month: str,
+    fallback_to_latest: bool = False,
+) -> str:
+    """从已加载记录中获取指定用户月份数据。
+
+    当 demo 数据没有覆盖系统当前月份时，可回退到该用户最近可用月份，并在
+    返回内容中附加数据说明，避免 Agent 在报告场景拿到空字符串后继续编造。
+    """
+    user_records = records.get(user_id, {})
+    record = user_records.get(month)
+    if record is not None:
+        return str(record)
+
+    logger.warning(f"[find_usage_record]未能检索到用户：{user_id}在{month}的使用记录数据")
+    if not fallback_to_latest or not user_records:
+        return ""
+
+    latest_month = sorted(user_records.keys())[-1]
+    latest_record = user_records[latest_month]
+    return (
+        f"{latest_record}\n\n"
+        f"数据说明：未找到 {month} 的模拟使用记录，"
+        f"以下使用最近可用月份 {latest_month} 的记录生成参考报告。"
+    )
+
+
 def fetch_usage_record(path: str, user_id: str, month: str) -> str:
     """获取指定用户在指定月份的使用记录，返回字符串；未检索到返回空字符串。"""
     records = load_usage_records(path)
-    record = records.get(user_id, {}).get(month)
-    if record is None:
-        logger.warning(f"[fetch_usage_record]未能检索到用户：{user_id}在{month}的使用记录数据")
-        return ""
-    return str(record)
+    return find_usage_record(records, user_id, month)

@@ -3,7 +3,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from agent.services.usage_records import fetch_usage_record, load_usage_records
+from agent.services.usage_records import fetch_usage_record, find_usage_record, load_usage_records
 
 
 class UsageRecordsTest(unittest.TestCase):
@@ -37,6 +37,21 @@ class UsageRecordsTest(unittest.TestCase):
 
             self.assertIn("覆盖率", fetch_usage_record(str(path), "1001", "2025-06"))
             self.assertEqual(fetch_usage_record(str(path), "1001", "2025-07"), "")
+
+    def test_find_usage_record_can_fallback_to_latest_available_month(self):
+        records = {
+            "1001": {
+                "2026-05": {"特征": "覆盖率:86%", "效率": "清扫效率:81%", "耗材": "HEPA滤网:剩余52%", "对比": "优于65%同面积用户"},
+                "2026-06": {"特征": "覆盖率:88%", "效率": "清扫效率:90%", "耗材": "HEPA滤网:剩余70%", "对比": "优于70%同面积用户"},
+            }
+        }
+
+        result = find_usage_record(records, "1001", "2026-07", fallback_to_latest=True)
+
+        self.assertIn("覆盖率:88%", result)
+        self.assertIn("数据说明", result)
+        self.assertIn("2026-07", result)
+        self.assertIn("2026-06", result)
 
 
 if __name__ == "__main__":

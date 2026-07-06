@@ -120,7 +120,7 @@ def main():
     output_path = os.path.abspath(output_path)
 
     with open(output_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["用户ID", "特征", "清洁效率", "耗材", "对比", "时间"])
 
         for uid, profile in USER_PROFILES.items():

@@ -7,6 +7,7 @@ from agent.react_agent import ReactAgent
 from agent.tools.agent_tools import configure_rag_model
 from model.factory import build_chat_model
 from utils.logger_handler import logger
+from utils.error_messages import format_agent_error
 from utils.session_context import set_location, set_user_id
 from utils.user_profile import load_user_profile, save_user_profile
 from database.profile_db import UserProfile
@@ -456,25 +457,32 @@ if prompt:
             step_idx = 0
             status_finalized = False
 
-            for kind, content in agent.execute_stream(prompt, st.session_state.get("messages", [])):
-                if kind == "answer":
-                    # 收到第一个回答字符：收起推理过程，开始逐字输出答案
-                    if not status_finalized:
-                        status.update(label="✅ 推理完成", state="complete", expanded=False)
-                        status_finalized = True
-                    answer_text += content
-                    answer_placeholder.markdown(answer_text)
-                else:
-                    step_idx += 1
-                    if kind == "thought":
-                        status.update(label=f"💭 正在分析（第 {step_idx} 步）...")
-                        status.markdown(f"**💭 思考**：{content}")
-                    elif kind == "tool_call":
-                        status.update(label=f"🔧 正在调用工具（第 {step_idx} 步）...")
-                        status.markdown(content)
-                    elif kind == "tool_result":
-                        status.update(label=f"📥 获取到信息（第 {step_idx} 步）...")
-                        status.markdown(content)
+            try:
+                for kind, content in agent.execute_stream(prompt, st.session_state.get("messages", [])):
+                    if kind == "answer":
+                        # 收到第一个回答字符：收起推理过程，开始逐字输出答案
+                        if not status_finalized:
+                            status.update(label="✅ 推理完成", state="complete", expanded=False)
+                            status_finalized = True
+                        answer_text += content
+                        answer_placeholder.markdown(answer_text)
+                    else:
+                        step_idx += 1
+                        if kind == "thought":
+                            status.update(label=f"💭 正在分析（第 {step_idx} 步）...")
+                            status.markdown(f"**💭 思考**：{content}")
+                        elif kind == "tool_call":
+                            status.update(label=f"🔧 正在调用工具（第 {step_idx} 步）...")
+                            status.markdown(content)
+                        elif kind == "tool_result":
+                            status.update(label=f"📥 获取到信息（第 {step_idx} 步）...")
+                            status.markdown(content)
+            except Exception as e:
+                logger.error(f"[app]Agent 响应失败：{e}", exc_info=True)
+                answer_text = format_agent_error(e)
+                answer_placeholder.markdown(answer_text)
+                status.update(label="⚠️ 生成失败", state="error", expanded=False)
+                status_finalized = True
 
             # 兜底：Agent 没产出最终回答
             if not answer_text:
