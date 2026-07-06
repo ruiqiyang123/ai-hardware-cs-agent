@@ -1,6 +1,11 @@
 import unittest
 
-from utils.model_config import DEFAULT_EMBEDDING_PROVIDER, DEFAULT_MIMO_CHAT_MODEL, build_chat_config
+from utils.model_config import (
+    DEFAULT_EMBEDDING_PROVIDER,
+    DEFAULT_LOCAL_EMBEDDING_DIMENSION,
+    DEFAULT_MIMO_CHAT_MODEL,
+    build_chat_config,
+)
 
 
 class ModelConfigTest(unittest.TestCase):
@@ -57,6 +62,9 @@ class ModelConfigTest(unittest.TestCase):
 
     def test_default_embedding_provider_runs_without_dashscope_key(self):
         self.assertEqual(DEFAULT_EMBEDDING_PROVIDER, "local")
+
+    def test_default_local_embedding_dimension_matches_existing_vector_store(self):
+        self.assertEqual(DEFAULT_LOCAL_EMBEDDING_DIMENSION, 1024)
 
 
 if __name__ == "__main__":

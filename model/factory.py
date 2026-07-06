@@ -21,7 +21,12 @@ from langchain_openai import ChatOpenAI
 from model.local_embeddings import LocalHashEmbeddings
 from utils.config_handler import rag_conf
 from utils.logger_handler import logger
-from utils.model_config import DEFAULT_EMBEDDING_PROVIDER, DEFAULT_MIMO_BASE_URL, DEFAULT_MIMO_CHAT_MODEL
+from utils.model_config import (
+    DEFAULT_EMBEDDING_PROVIDER,
+    DEFAULT_LOCAL_EMBEDDING_DIMENSION,
+    DEFAULT_MIMO_BASE_URL,
+    DEFAULT_MIMO_CHAT_MODEL,
+)
 
 load_dotenv(override=False)
 
@@ -96,7 +101,7 @@ class EmbeddingsFactory(BaseModelFactory):
         provider = (provider or os.getenv("EMBEDDING_PROVIDER", _DEFAULT_EMBEDDING_PROVIDER)).lower()
 
         if provider == "local":
-            dimension = dimension or int(os.getenv("LOCAL_EMBEDDING_DIMENSION", "384"))
+            dimension = dimension or int(os.getenv("LOCAL_EMBEDDING_DIMENSION", str(DEFAULT_LOCAL_EMBEDDING_DIMENSION)))
             logger.info(f"[EmbeddingsFactory]构建本地哈希 embedding，维度={dimension}")
             return LocalHashEmbeddings(dimension=dimension)
 

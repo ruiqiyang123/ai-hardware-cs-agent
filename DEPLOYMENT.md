@@ -40,6 +40,7 @@ MIMO_BASE_URL=https://token-plan-sgp.xiaomimimo.com/v1
 MIMO_CHAT_MODEL=mimo-v2.5-pro
 CHAT_PROVIDER=mimo
 EMBEDDING_PROVIDER=local
+LOCAL_EMBEDDING_DIMENSION=1024
 ```
 
 **推荐做法**：求职 Demo 期间设置 MiMo 共享 Key，让面试官打开页面即可试用。

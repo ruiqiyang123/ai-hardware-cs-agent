@@ -11,6 +11,7 @@ from typing import Dict, Optional
 DEFAULT_MIMO_BASE_URL = "https://token-plan-sgp.xiaomimimo.com/v1"
 DEFAULT_MIMO_CHAT_MODEL = "mimo-v2.5-pro"
 DEFAULT_EMBEDDING_PROVIDER = "local"
+DEFAULT_LOCAL_EMBEDDING_DIMENSION = 1024
 
 
 @dataclass(frozen=True)

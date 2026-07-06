@@ -9,6 +9,7 @@ from agent.tools.agent_tools import (rag_summarize, get_weather, get_user_locati
 from agent.tools.profile_tools import get_user_profile
 from agent.tools.middleware import build_agent_prompt
 from agent.services.memory_compression import MessageCompressionService
+from agent.message_builder import build_agent_messages
 
 
 # 流式输出事件类型，前端按此分类渲染：
@@ -49,9 +50,8 @@ class ReactAgent:
             query: 用户当前输入的问题
             chat_history: 历史对话列表，格式为 [{"role": "user", "content": "..."}, ...]
         """
-        # 构建输入消息（历史 + 当前问题）
-        messages = list(chat_history or [])  # 复制避免修改原列表
-        messages.append({"role": "user", "content": query})
+        # 构建输入消息（历史 + 当前问题），兼容前端已将当前问题写入历史的场景。
+        messages = build_agent_messages(query, chat_history)
 
         # 压缩消息（如果超过阈值）
         compressed_messages = self.compression_service.compress_messages(messages)
