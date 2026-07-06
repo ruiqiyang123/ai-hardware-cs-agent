@@ -16,7 +16,7 @@ class ModelConfigTest(unittest.TestCase):
         self.assertTrue(config.is_configured)
         self.assertEqual(config.kwargs["provider"], "mimo")
         self.assertEqual(config.kwargs["model_name"], DEFAULT_MIMO_CHAT_MODEL)
-        self.assertEqual(DEFAULT_MIMO_CHAT_MODEL, "tmimo-v2.5-pro")
+        self.assertEqual(DEFAULT_MIMO_CHAT_MODEL, "mimo-v2.5-pro")
 
     def test_signature_does_not_contain_raw_api_key(self):
         config = build_chat_config(
@@ -24,7 +24,7 @@ class ModelConfigTest(unittest.TestCase):
             dashscope_key=None,
             mimo_key="tp-secret-key",
             mimo_base_url="https://token-plan-sgp.xiaomimimo.com/v1",
-            mimo_model_name="tmimo-v2.5-pro",
+            mimo_model_name="mimo-v2.5-pro",
         )
 
         self.assertIn("mimo:", config.signature)

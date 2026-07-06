@@ -37,7 +37,7 @@ git push origin main
 ```bash
 MIMO_API_KEY=your-mimo-key
 MIMO_BASE_URL=https://token-plan-sgp.xiaomimimo.com/v1
-MIMO_CHAT_MODEL=tmimo-v2.5-pro
+MIMO_CHAT_MODEL=mimo-v2.5-pro
 CHAT_PROVIDER=mimo
 EMBEDDING_PROVIDER=local
 ```

@@ -63,7 +63,7 @@ pip install -r requirements.txt
 # 4. 配置 API Key（默认走小米 MiMo）
 export MIMO_API_KEY="your-key"
 export MIMO_BASE_URL="https://token-plan-sgp.xiaomimimo.com/v1"
-export MIMO_CHAT_MODEL="tmimo-v2.5-pro"
+export MIMO_CHAT_MODEL="mimo-v2.5-pro"
 export CHAT_PROVIDER="mimo"
 export EMBEDDING_PROVIDER="local"
 

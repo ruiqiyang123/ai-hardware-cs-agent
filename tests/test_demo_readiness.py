@@ -57,7 +57,7 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertIn("DASHSCOPE_API_KEY=", env_example)
         self.assertIn("MIMO_API_KEY=", env_example)
         self.assertIn("MIMO_BASE_URL=", env_example)
-        self.assertIn("MIMO_CHAT_MODEL=tmimo-v2.5-pro", env_example)
+        self.assertIn("MIMO_CHAT_MODEL=mimo-v2.5-pro", env_example)
         self.assertIn("CHAT_PROVIDER=mimo", env_example)
         self.assertIn("EMBEDDING_PROVIDER=", env_example)
         self.assertTrue((ROOT / "model/local_embeddings.py").exists())
