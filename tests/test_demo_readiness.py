@@ -34,6 +34,11 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertIn("Union[Embeddings, BaseChatModel]", model_factory)
         self.assertNotIn("Embeddings | BaseChatModel", model_factory)
 
+    def test_runtime_environment_overrides_local_dotenv(self):
+        model_factory = read_text("model/factory.py")
+
+        self.assertIn("load_dotenv(override=False)", model_factory)
+
     def test_init_script_and_env_example_exist(self):
         self.assertTrue((ROOT / "scripts/init_knowledge_base.py").exists())
 

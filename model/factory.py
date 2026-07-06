@@ -21,11 +21,12 @@ from langchain_openai import ChatOpenAI
 from model.local_embeddings import LocalHashEmbeddings
 from utils.config_handler import rag_conf
 from utils.logger_handler import logger
+from utils.model_config import DEFAULT_EMBEDDING_PROVIDER, DEFAULT_MIMO_BASE_URL, DEFAULT_MIMO_CHAT_MODEL
 
-load_dotenv(override=True)
+load_dotenv(override=False)
 
 _DEFAULT_CHAT_PROVIDER = "dashscope"
-_DEFAULT_EMBEDDING_PROVIDER = "dashscope"
+_DEFAULT_EMBEDDING_PROVIDER = DEFAULT_EMBEDDING_PROVIDER
 
 
 class BaseModelFactory(ABC):
@@ -51,12 +52,12 @@ class ChatModelFactory(BaseModelFactory):
 
         if provider in {"mimo", "openai"}:
             api_key = api_key or os.getenv("MIMO_API_KEY") or os.getenv("OPENAI_API_KEY")
-            base_url = base_url or os.getenv("MIMO_BASE_URL") or os.getenv("OPENAI_BASE_URL")
+            base_url = base_url or os.getenv("MIMO_BASE_URL") or os.getenv("OPENAI_BASE_URL") or DEFAULT_MIMO_BASE_URL
             model_name = (
                 model_name
                 or os.getenv("MIMO_CHAT_MODEL")
                 or os.getenv("OPENAI_CHAT_MODEL")
-                or rag_conf["chat_model_name"]
+                or DEFAULT_MIMO_CHAT_MODEL
             )
             if not api_key or not base_url:
                 raise ValueError("使用 MiMo/OpenAI 兼容模型时，请配置 api_key 和 base_url")
@@ -69,6 +70,9 @@ class ChatModelFactory(BaseModelFactory):
             )
 
         # dashscope（默认）
+        api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
+        if api_key:
+            os.environ["DASHSCOPE_API_KEY"] = api_key
         logger.info(f"[ChatModelFactory]构建 DashScope 模型：{rag_conf['chat_model_name']}")
         return ChatTongyi(model=rag_conf["chat_model_name"])
 

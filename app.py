@@ -8,6 +8,7 @@ from agent.tools.agent_tools import configure_rag_model
 from model.factory import build_chat_model
 from utils.logger_handler import logger
 from utils.error_messages import format_agent_error
+from utils.model_config import DEFAULT_MIMO_BASE_URL, DEFAULT_MIMO_CHAT_MODEL, build_chat_config
 from utils.session_context import set_location, set_user_id
 from utils.user_profile import load_user_profile, save_user_profile
 from database.profile_db import UserProfile
@@ -53,52 +54,107 @@ st.title("🤖 智扫通机器人智能客服")
 st.caption("LangGraph ReAct Agent + RAG 检索增强　·　扫地机器人售后场景")
 
 # ============================================================
-# API Key 配置（环境变量 vs 侧边栏手填，二选一）
+# API Key 配置（共享 Key + 侧边栏可覆盖）
 # ============================================================
-env_dashscope_key = os.getenv("DASHSCOPE_API_KEY")
-env_mimo_key = os.getenv("MIMO_API_KEY")
+def _runtime_secret(name: str) -> Optional[str]:
+    """读取环境变量 / Streamlit Secrets，避免 Cloud 与本地配置方式不一致。"""
+    value = os.getenv(name)
+    if value:
+        return value
+
+    try:
+        secret_value = st.secrets.get(name)
+    except Exception:
+        return None
+    return str(secret_value) if secret_value else None
+
+
+env_dashscope_key = _runtime_secret("DASHSCOPE_API_KEY")
+env_mimo_key = _runtime_secret("MIMO_API_KEY")
+env_chat_provider = _runtime_secret("CHAT_PROVIDER")
+env_mimo_base_url = _runtime_secret("MIMO_BASE_URL") or DEFAULT_MIMO_BASE_URL
+env_mimo_model = _runtime_secret("MIMO_CHAT_MODEL") or DEFAULT_MIMO_CHAT_MODEL
+
+
+def _default_provider_index() -> int:
+    provider = (env_chat_provider or "").lower()
+    if provider in {"dashscope", "qwen", "tongyi"}:
+        return 1
+    if provider in {"mimo", "openai"}:
+        return 0
+    if env_mimo_key:
+        return 0
+    if env_dashscope_key:
+        return 1
+    return 0
 
 with st.sidebar:
     st.header("⚙️ 模型配置")
 
-    if not env_dashscope_key and not env_mimo_key:
-        with st.expander("📖 如何获取 API Key", expanded=False):
-            st.markdown(
-                """
-                **阿里云百炼（推荐）**
-                - [bailian.console.aliyun.com](https://bailian.console.aliyun.com/)
-                - 新用户有免费额度
+    with st.expander("📖 如何获取 API Key", expanded=False):
+        st.markdown(
+            """
+            **小米 MiMo**
+            - [mimo.xiaomi.com](https://mimo.xiaomi.com/)
+            - Base URL: `https://token-plan-sgp.xiaomimimo.com/v1`
+            - Token Plan 常用模型：`tmimo-v2.5-pro`
 
-                **小米 MiMo（备选）**
-                - [mimo.xiaomi.com](https://mimo.xiaomi.com/)
-                - Base URL: `https://token-plan-sgp.xiaomimimo.com/v1`
-                """
-            )
-
-        st.subheader("阿里云 DashScope")
-        dashscope_key = st.text_input("DashScope API Key", type="password", key="dashscope_key_input")
-        st.divider()
-        st.subheader("小米 MiMo")
-        mimo_key = st.text_input("MiMo API Key", type="password", key="mimo_key_input")
-        mimo_base_url = st.text_input(
-            "MiMo Base URL",
-            value="https://token-plan-sgp.xiaomimimo.com/v1",
-            key="mimo_base_input",
+            **阿里云百炼**
+            - [bailian.console.aliyun.com](https://bailian.console.aliyun.com/)
+            - 默认聊天模型：`qwen-plus`
+            """
         )
-        if not dashscope_key and not mimo_key:
-            st.warning("⚠️ 请配置 API Key 后再开始对话")
-        st.divider()
+
+    provider_label = st.radio(
+        "聊天模型",
+        ["小米 MiMo", "阿里云 DashScope"],
+        index=_default_provider_index(),
+        key="chat_provider_radio",
+    )
+    selected_provider = "mimo" if provider_label == "小米 MiMo" else "dashscope"
+
+    dashscope_key = env_dashscope_key
+    mimo_key = env_mimo_key
+    mimo_base_url = env_mimo_base_url
+    mimo_model_name = env_mimo_model
+
+    if selected_provider == "mimo":
+        if env_mimo_key:
+            st.success("✅ MiMo 共享 API Key 已就绪")
+        elif env_dashscope_key:
+            st.info("当前云端有 DashScope 共享 Key；你已选择 MiMo，请填写 MiMo API Key。")
+        else:
+            st.warning("⚠️ 请填写 MiMo API Key 后再开始对话")
+
+        manual_mimo_key = st.text_input(
+            "MiMo API Key",
+            type="password",
+            key="mimo_key_input",
+            placeholder="留空则使用共享 Key" if env_mimo_key else "粘贴 MiMo Token Plan API Key",
+        )
+        if manual_mimo_key:
+            mimo_key = manual_mimo_key
+        mimo_base_url = st.text_input("MiMo Base URL", value=env_mimo_base_url, key="mimo_base_input")
+        mimo_model_name = st.text_input("MiMo 模型", value=env_mimo_model, key="mimo_model_input")
     else:
-        st.success("✅ 共享 API Key 已就绪")
         if env_dashscope_key:
-            st.caption("模型：阿里云百炼 Qwen-Plus")
+            st.success("✅ DashScope 共享 API Key 已就绪")
         elif env_mimo_key:
-            st.caption("模型：小米 MiMo")
-        st.caption("💡 共享额度有限，请合理使用")
-        dashscope_key = env_dashscope_key
-        mimo_key = env_mimo_key
-        mimo_base_url = os.getenv("MIMO_BASE_URL", "https://token-plan-sgp.xiaomimimo.com/v1")
-        st.divider()
+            st.info("当前云端有 MiMo 共享 Key；你已选择 DashScope，请填写 DashScope API Key。")
+        else:
+            st.warning("⚠️ 请填写 DashScope API Key 后再开始对话")
+
+        manual_dashscope_key = st.text_input(
+            "DashScope API Key",
+            type="password",
+            key="dashscope_key_input",
+            placeholder="留空则使用共享 Key" if env_dashscope_key else "粘贴 DashScope API Key",
+        )
+        if manual_dashscope_key:
+            dashscope_key = manual_dashscope_key
+
+    st.caption("💡 共享额度有限；如果生成失败，可以切换模型或填写自己的 Key。")
+    st.divider()
 
 
 # ============================================================
@@ -106,26 +162,14 @@ with st.sidebar:
 # ============================================================
 def resolve_chat_config() -> tuple[dict, str]:
     """从侧边栏/环境变量解析当前应使用的 chat 模型配置。"""
-    if mimo_key:
-        kwargs = {
-            "provider": "mimo",
-            "api_key": mimo_key,
-            "base_url": mimo_base_url,
-            "model_name": os.getenv("MIMO_CHAT_MODEL"),
-        }
-        sig = f"mimo:{mimo_key}:{mimo_base_url}"
-    elif dashscope_key:
-        # DashScope 的 ChatTongyi 隐式从 os.environ 读取 API Key（不支持构造时显式传参），
-        # 因此需要在调用 build_chat_model() 之前将 key 写入进程环境变量。
-        # 这在 Streamlit 单进程场景下是安全的：只影响当前进程，不会泄漏给其他用户。
-        # 面试/演示场景依赖此机制实现"开箱即用"（.env 或共享 Key），勿移除。
-        os.environ["DASHSCOPE_API_KEY"] = dashscope_key
-        kwargs = {"provider": "dashscope"}
-        sig = f"dashscope:{dashscope_key}"
-    else:
-        kwargs = {}
-        sig = "default"
-    return kwargs, sig
+    config = build_chat_config(
+        provider=selected_provider,
+        dashscope_key=dashscope_key,
+        mimo_key=mimo_key,
+        mimo_base_url=mimo_base_url,
+        mimo_model_name=mimo_model_name,
+    )
+    return config.kwargs, config.signature
 
 
 @st.cache_resource(show_spinner="📚 首次启动正在初始化知识库（约 30-60 秒）...")
