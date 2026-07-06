@@ -32,6 +32,7 @@ htmlcov/
 
 # 个人面试准备文档，仅本地保存，不上传 GitHub
 INTERVIEW_PREP.md
+INTERVIEW_SCRIPTS.md
 
 # =========================
 # Logs
@@ -44,6 +45,7 @@ logs/
 # =========================
 chroma_db/
 md5.txt
+data/profiles.db
 
 # Optional: if you later generate temp reports locally
 tmp/

@@ -1,4 +1,4 @@
-# Smart Hardware RAG Agent
+# ai-hardware-cs-agent
 # 安装：pip install -r requirements.txt
 
 # LangChain 核心

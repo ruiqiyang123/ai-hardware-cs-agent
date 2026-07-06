@@ -20,11 +20,10 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime
+from typing import Any
 
 # 确保能 import 项目模块
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from agent.react_agent import ReactAgent
 
 
 def load_cases(path: str) -> list:
@@ -32,11 +31,21 @@ def load_cases(path: str) -> list:
         return json.load(f)
 
 
-def run_agent(agent: ReactAgent, question: str) -> str:
-    """跑一遍 Agent，把流式输出拼成完整字符串。"""
+def run_agent(agent: Any, question: str) -> str:
+    """跑一遍 Agent，把最终回答事件拼成完整字符串。
+
+    ReactAgent.execute_stream 现在返回 (kind, content) 事件流：
+    thought/tool_call/tool_result 用于前端过程展示，评测只统计 answer。
+    兼容旧版纯字符串流，方便历史脚本或测试桩复用。
+    """
     chunks = []
     for chunk in agent.execute_stream(question):
-        chunks.append(chunk)
+        if isinstance(chunk, tuple) and len(chunk) == 2:
+            kind, content = chunk
+            if kind == "answer":
+                chunks.append(content)
+        else:
+            chunks.append(str(chunk))
     return "".join(chunks)
 
 
@@ -64,6 +73,8 @@ def main():
 
     print(f"📋 评测集：{len(cases)} 题　标签：{args.tag}")
     print("=" * 60)
+
+    from agent.react_agent import ReactAgent
 
     agent = ReactAgent()
     results = []

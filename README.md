@@ -1,6 +1,6 @@
 <div align="center">
 
-# Smart Hardware RAG Agent
+# 智扫通 AI Hardware CS Agent
 
 **面向智能硬件售后的 Agentic RAG 客服系统**
 
@@ -150,7 +150,7 @@ A: 📊 张先生 2025-06 使用报告
 ## 项目结构
 
 ```
-smart-hardware-rag-agent/
+ai-hardware-cs-agent/
 ├── app.py                          # Streamlit 入口
 ├── agent/
 │   ├── react_agent.py              # LangGraph ReAct Agent 封装
@@ -174,21 +174,21 @@ smart-hardware-rag-agent/
 │   ├── session_context.py          # 会话级用户上下文
 │   └── ...
 ├── eval/
-│   ├── eval_cases.json             # 31 题评测集
+│   ├── eval_cases.json             # 30 题评测集
 │   ├── run_eval.py                 # 评测脚本（支持 --record）
 │   ├── compare.py                  # 前后对比
 │   └── trend.py                    # 评测趋势查看
 ├── scripts/
 │   ├── init_knowledge_base.py      # 知识库初始化
 │   └── generate_records.py         # 使用记录生成器
-├── tests/                          # 单元测试（16 个用例）
+├── tests/                          # 单元测试（17 个用例）
 ├── .github/workflows/ci.yml        # GitHub Actions CI
 └── data/                           # 知识库文档 + CSV
 ```
 
 ## 测试与 CI
 
-项目包含 16 个单元测试，覆盖天气 API、CSV 解析、来源格式化、会话上下文、评测评分等模块。CI 在每次 push / PR 时自动运行：
+项目包含 17 个单元测试，覆盖天气 API、CSV 解析、来源格式化、会话上下文、评测评分、评测事件流兼容等模块。CI 在每次 push / PR 时自动运行：
 
 ```bash
 # 本地运行测试
@@ -211,7 +211,7 @@ python eval/trend.py                 # 查看历史趋势
 | 外部 API 重试 | 通用 `with_retry` 装饰器，指数退避覆盖瞬时网络抖动 |
 | 思考过程可视化 | `st.status` 实时容器展示 Agent 推理步骤（💭思考 → 🔧调用工具 → 📥结果），出答案时自动收起 |
 | 动态数据范围 | `records.csv` 月份动态生成到当月，耗材采用「递减+换件回升」模型贴近真实 |
-| 评测体系 | 31 题评测集 + 前后对比 + 趋势记录 + CI 自动验证 |
+| 评测体系 | 30 题评测集 + 前后对比 + 趋势记录 + CI 自动验证 |
 | 零门槛在线体验 | Streamlit Cloud 部署 + 共享 API Key Secret，访客无需配置即可使用 |
 
 ## 配置说明
