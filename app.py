@@ -79,12 +79,7 @@ mimo_base_url = env_mimo_base_url
 mimo_model_name = env_mimo_model
 
 with st.sidebar:
-    st.header("⚙️ 系统状态")
-    if env_mimo_key:
-        st.success("✅ 后台 MiMo 已就绪，访客无需配置")
-    else:
-        st.error("⚠️ 后台 MiMo 未配置，请联系项目作者")
-    st.caption(f"模型：小米 MiMo · `{mimo_model_name}`")
+    st.caption("模型：MiMo")
     st.divider()
 
 
@@ -225,7 +220,7 @@ def get_or_build_agent() -> ReactAgent | None:
         logger.info(f"[app]重建 Agent，配置签名={sig}")
         return st.session_state["agent"]
     except ValueError as e:
-        st.error(f"后台模型配置错误：{e}")
+        st.error(f"模型服务配置错误：{e}")
         return None
 
 
@@ -416,7 +411,7 @@ if not prompt and st.session_state.get("pending_prompt"):
 
 if prompt:
     if agent is None:
-        st.error("⚠️ 后台 MiMo 未配置，请联系项目作者")
+        st.error("⚠️ 模型服务暂不可用，请联系项目作者")
     else:
         with st.chat_message("user", avatar="🧑"):
             st.markdown(prompt)
