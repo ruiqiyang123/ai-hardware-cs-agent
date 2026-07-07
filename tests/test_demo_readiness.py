@@ -51,7 +51,7 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertNotIn("系统状态", app)
         self.assertNotIn("后台 MiMo", app)
         self.assertNotIn("访客无需配置", app)
-        self.assertIn('st.caption("模型：MiMo")', app)
+        self.assertIn('st.caption(f"模型：MiMo · `{mimo_model_name}`")', app)
 
     def test_init_script_and_env_example_exist(self):
         self.assertTrue((ROOT / "scripts/init_knowledge_base.py").exists())

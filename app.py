@@ -79,7 +79,7 @@ mimo_base_url = env_mimo_base_url
 mimo_model_name = env_mimo_model
 
 with st.sidebar:
-    st.caption("模型：MiMo")
+    st.caption(f"模型：MiMo · `{mimo_model_name}`")
     st.divider()
 
 
