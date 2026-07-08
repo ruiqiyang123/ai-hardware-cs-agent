@@ -55,11 +55,10 @@ class MessageCompressionService:
         # 构建压缩后的消息列表
         compressed = [
             {
-                # 用 "user" 角色而非 "system"，避免和 build_agent_prompt 注入的
-                # SystemMessage 冲突——LangGraph 只认 prompt 参数返回的系统消息，
-                # 额外的 system 消息可能被不同 LLM provider 忽略或错误处理。
-                "role": "user",
-                "content": f"[对话历史摘要]\n{summary}"
+                # 用 assistant 角色承载摘要，避免模型把摘要误解为用户的新问题。
+                # 不用 system 角色是为了避免和 build_agent_prompt 注入的系统消息冲突。
+                "role": "assistant",
+                "content": f"[对话历史摘要，仅供上下文，不是用户新问题]\n{summary}"
             }
         ]
         compressed.extend(new_messages)
@@ -77,13 +76,25 @@ class MessageCompressionService:
         后续可升级为 LLM 智能摘要，当前使用截断拼接保证实时性
         """
         summary_parts = []
-        for i in range(0, len(messages), 2):
-            if i + 1 < len(messages):
-                user_msg = messages[i].get("content", "")
-                asst_msg = messages[i + 1].get("content", "")
-                # 截取前 50 字，避免摘要过长
-                user_short = user_msg[:50] + "..." if len(user_msg) > 50 else user_msg
-                asst_short = asst_msg[:50] + "..." if len(asst_msg) > 50 else asst_msg
-                summary_parts.append(f"Q: {user_short} A: {asst_short}")
+        pending_user = None
+
+        for message in messages:
+            role = message.get("role")
+            content = message.get("content", "")
+            short = content[:50] + "..." if len(content) > 50 else content
+
+            if role == "user":
+                if pending_user:
+                    summary_parts.append(f"Q: {pending_user}")
+                pending_user = short
+            elif role == "assistant":
+                if pending_user:
+                    summary_parts.append(f"Q: {pending_user} A: {short}")
+                    pending_user = None
+                elif short.startswith("[对话历史摘要"):
+                    summary_parts.append(short)
+
+        if pending_user:
+            summary_parts.append(f"Q: {pending_user}")
 
         return "；".join(summary_parts) if summary_parts else "历史对话内容已摘要"

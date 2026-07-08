@@ -42,7 +42,8 @@ class VectorStoreService:
         def check_md5_hex(md5_for_check: str):
             if not os.path.exists(get_abs_path(chroma_conf["md5_hex_store"])):
                 # 创建文件
-                open(get_abs_path(chroma_conf["md5_hex_store"]), "w", encoding="utf-8").close()
+                with open(get_abs_path(chroma_conf["md5_hex_store"]), "w", encoding="utf-8"):
+                    pass
                 return False            # md5 没处理过
 
             with open(get_abs_path(chroma_conf["md5_hex_store"]), "r", encoding="utf-8") as f:
@@ -116,4 +117,3 @@ if __name__ == '__main__':
     for r in res:
         print(r.page_content)
         print("-"*20)
-

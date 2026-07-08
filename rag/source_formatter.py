@@ -22,13 +22,28 @@ def extract_source_name(metadata: dict) -> str:
 
 
 def format_reference_sources(metadata_list: list[dict]) -> str:
-    """把多份文档的元数据格式化成「参考来源：a、b、c」的引用行。
+    """把多份文档的元数据格式化成引用行。
 
-    按首次出现顺序去重，避免同一文档被多次命中时重复列出。
+    优先使用 source-backed 条目 metadata，展示文件和命中条目；
+    旧文档则退化为文件名。按首次出现顺序去重。
     """
-    unique_sources = []
+    unique_entries = []
+    seen_entries = set()
+
     for metadata in metadata_list:
         name = extract_source_name(metadata)
-        if name not in unique_sources:
-            unique_sources.append(name)
-    return "参考来源：" + "、".join(unique_sources)
+        entry_id = metadata.get("entry_id")
+        entry_question = metadata.get("entry_question")
+
+        if entry_id and entry_question:
+            label = f"{name} 第{entry_id}条「{entry_question}」"
+            dedupe_key = (name, entry_id)
+        else:
+            label = name
+            dedupe_key = (name, None)
+
+        if dedupe_key not in seen_entries:
+            seen_entries.add(dedupe_key)
+            unique_entries.append(label)
+
+    return "参考来源：" + "、".join(unique_entries[:5])

@@ -33,6 +33,10 @@ htmlcov/
 # 个人面试准备文档，仅本地保存，不上传 GitHub
 INTERVIEW_PREP.md
 INTERVIEW_SCRIPTS.md
+PROJECT_ANCHOR_CARD.md
+PROJECT_CHAIN_CARD.md
+PROJECT_EVAL_BADCASE_CARD.md
+项目分析报告.md
 
 # =========================
 # Logs
@@ -67,6 +71,7 @@ temp/
 # Claude Code 本地配置（含个人权限设置，不随仓库分发）
 # =========================
 .claude/
+.workbuddy/
 
 # =========================
 # OS junk

@@ -1,0 +1,112 @@
+# 硬件钱包备份、恢复与设备更换（source-backed 改写）
+
+资料来源（事实参考，内容已重新组织为 KeyGuard 客服条目，不复制原文）：
+- S1 BIP-39 Mnemonic code specification: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+- S2 Trezor Support - Understanding wallet backups: https://trezor.io/learn/security-privacy/personal-security-standards/understanding-trezor-wallet-backups-12-20-or-24-words
+- S3 Trezor Support - How to use a wallet backup: https://trezor.io/guides/backups-recovery/general-standards/how-to-use-a-wallet-backup
+- S4 Ledger Support - Change recovery phrase and create new accounts: https://support.ledger.com/article/8460010791069-zd
+- S5 Ledger Support - Loss of funds: https://support.ledger.com/article/7624842382621-zd
+- S6 Ledger Academy - Passphrase: Ledger's Advanced Security Feature: https://www.ledger.com/academy/passphrase-an-advanced-security-feature
+- S7 Trezor Support - Passphrase hidden wallets issues: https://trezor.io/support/troubleshooting/trezor-suite-issues/passphrase-hidden-wallets-issues
+- S8 Ledger Support - Recovery Check: https://support.ledger.com/article/360007223753-zd
+- S9 Ledger Blog - Understanding crypto addresses and derivation paths: https://www.ledger.com/blog/understanding-crypto-addresses-and-derivation-paths
+- S10 BIP-44 Multi-Account Hierarchy for Deterministic Wallets: https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
+- S11 Trezor Support - Troubleshoot wallet backup and recovery problems: https://trezor.io/support/troubleshooting/trezor-suite-issues/troubleshoot-wallet-backup-and-recovery-problems
+
+1. 问题：硬件坏了，钱包还能恢复吗。
+适用场景：设备不开机、损坏、丢失，但用户还持有钱包备份。
+排查步骤：确认备份词数量和顺序；在新硬件钱包或官方支持流程中选择恢复；恢复后核对地址；必要时重新添加账户。
+建议动作：告诉用户资产不存储在设备外壳里，设备损坏通常可以通过备份恢复访问。
+安全边界：不要在网页、聊天窗口或远程控制软件中输入备份。
+来源参考：S2、S3
+
+2. 问题：助记词/钱包备份是什么。
+适用场景：用户不理解为什么硬件设备坏了还能恢复。
+排查步骤：解释 BIP39 等标准把随机数转换为一组词，钱包可由备份派生账户；不同品牌可能使用 12、20、24 等不同长度或标准。
+建议动作：用“设备是钥匙管理器，备份是恢复入口”的方式解释。
+安全边界：不要让用户口述或粘贴具体词。
+来源参考：S1、S2
+
+3. 问题：恢复后看不到资产。
+适用场景：用户更换设备或恢复钱包后余额为零。
+排查步骤：检查备份词顺序和拼写；确认是否使用 Passphrase；确认账户类型、链、派生路径和地址格式；等待账户同步。
+建议动作：先核对恢复出的收款地址是否和旧地址一致，再判断是否资产丢失。
+安全边界：不要让用户把完整备份发来排查。
+来源参考：S2、S3
+
+4. 问题：忘记 PIN 但备份还在。
+适用场景：用户无法解锁设备，但持有完整备份。
+排查步骤：说明 PIN 是本地设备解锁凭据；无法找回 PIN 时通常需要重置设备，再用备份恢复钱包。
+建议动作：重置前确认备份完整可用。
+安全边界：客服不能帮用户破解 PIN，也不会要求用户提供 PIN。
+来源参考：S3
+
+5. 问题：备份疑似泄露后怎么换新钱包。
+适用场景：助记词被拍照、发到云端、被陌生人看到或输入到可疑网站。
+排查步骤：创建新钱包和新备份；将旧钱包资产转移到新地址；确认所有资产到账；废弃旧备份；撤销旧地址高风险授权。
+建议动作：如果资产很多，可按资产价值和流动性排序迁移，先转移高价值资产。
+安全边界：只要备份疑似泄露，就不要继续用旧钱包收款。
+来源参考：S4、S5
+
+6. 问题：如何安全验证备份是否写对。
+适用场景：用户担心手写备份有拼写错误。
+排查步骤：使用官方恢复检查功能，或在备用硬件设备中恢复验证；确认恢复地址与原地址一致；验证完成后清理测试设备。
+建议动作：恢复验证比“看一眼纸条”更可靠。
+安全边界：不要使用第三方网页工具检查备份。
+来源参考：S2、S3
+
+7. 问题：Passphrase 是什么，忘记后能否找回。
+适用场景：用户开启了 Passphrase/隐藏钱包，恢复后看不到原账户或担心忘记。
+排查步骤：解释 Passphrase 会和钱包备份共同派生出不同钱包；同一组助记词配不同 Passphrase 会得到不同账户；忘记 Passphrase 通常无法由客服或设备找回。
+建议动作：只建议理解风险的用户使用 Passphrase；记录方式必须和助记词分开保管。
+安全边界：客服不能索要、验证或代管 Passphrase。
+来源参考：S6、S7
+
+8. 问题：恢复后地址不一致。
+适用场景：用户用同一组备份恢复后，发现收款地址和旧设备不同。
+排查步骤：检查是否输入了同一 Passphrase；确认币种、账户类型、地址格式和派生路径；确认是否添加了正确账户；等待钱包同步完成。
+建议动作：先用旧记录中的收款地址对照，不要在地址不一致时接收大额资产。
+安全边界：不要把完整助记词发给客服来核对。
+来源参考：S7、S9、S10
+
+9. 问题：派生路径是什么，为什么会影响余额。
+适用场景：用户恢复钱包后余额为零，或第三方钱包要求选择 Legacy、SegWit、Ledger Live 等路径。
+排查步骤：解释派生路径决定从同一备份中派生哪一组账户；不同链、地址格式或钱包历史版本可能使用不同路径；选择错误路径会显示不同地址和余额。
+建议动作：优先使用原钱包/官方 App 的默认路径；迁移到第三方钱包时记录账户类型和路径。
+安全边界：派生路径不是私钥，但不要为了排查把助记词输入不可信工具。
+来源参考：S9、S10
+
+10. 问题：备份词数量不一样是否正常。
+适用场景：用户看到 12、20、24 词备份或 Shamir/SLIP39 备份，担心不兼容。
+排查步骤：确认设备型号和备份标准；BIP39 常见为 12/24 词，不同品牌可能支持不同长度；部分设备支持 Shamir/SLIP39 分片备份。
+建议动作：按设备生成时的标准恢复，不要把不同备份标准混用。
+安全边界：备份标准不同不代表可以随意补词、删词或改顺序。
+来源参考：S1、S2
+
+11. 问题：备份词有拼写错误或设备不认某个词。
+适用场景：恢复时某个英文单词无法输入或校验失败。
+排查步骤：检查是否抄错相近单词、顺序是否错位、是否把不同备份混在一起；参考官方常见拼写错误提示或 BIP39 词表排查。
+建议动作：在不暴露完整备份的前提下，让用户自己逐词核对纸质备份。
+安全边界：客服可以解释排查方法，但不能要求用户提供完整词序。
+来源参考：S1、S11
+
+12. 问题：是否需要保存派生路径和账户类型。
+适用场景：用户准备长期冷存储，担心多年后恢复困难。
+排查步骤：建议记录币种、账户类型、地址格式、是否启用 Passphrase、常用钱包软件和大致创建时间；不需要把这些和助记词放在同一位置。
+建议动作：把恢复上下文作为“非敏感辅助信息”单独保存，降低未来恢复时选错账户的概率。
+安全边界：辅助信息不能替代助记词，也不能和助记词一起拍照上传云端。
+来源参考：S9、S10
+
+13. 问题：更换新设备后是否必须转移资产。
+适用场景：旧设备损坏或丢失，用户用新设备恢复了同一钱包。
+排查步骤：如果旧备份没有泄露，恢复到新设备后可继续使用同一钱包；如果旧设备丢失且 PIN 弱、备份可能泄露或环境不可信，应迁移到新生成的钱包。
+建议动作：根据“备份是否安全”和“旧设备是否可能被解锁”决定是否转移资产。
+安全边界：如果助记词或 Passphrase 疑似泄露，必须按泄露处理，不要继续接收资产到旧地址。
+来源参考：S3、S4、S5
+
+14. 问题：如何做恢复演练但不影响真实资产。
+适用场景：用户想确认备份有效，但担心误删设备或误操作资产。
+排查步骤：优先使用官方恢复检查功能；也可以用备用硬件设备离线恢复并核对地址；测试完成后重置备用设备。
+建议动作：恢复演练只核对地址和账户，不需要发起真实交易。
+安全边界：不要在联网网页、截图、录屏或远程会议中展示完整备份。
+来源参考：S8、S11

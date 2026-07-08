@@ -29,7 +29,7 @@ python-dotenv==1.0.1
 # 阿里云百炼模型
 dashscope==1.20.14
 
-# HTTP 请求（真实天气 API、IP 定位）
+# HTTP 请求（IP 定位等外部接口）
 requests>=2.32.5,<3.0.0
 
 # 测试

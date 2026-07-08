@@ -76,10 +76,8 @@ class ChatModelFactory(BaseModelFactory):
 
         # dashscope（默认）
         api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
-        if api_key:
-            os.environ["DASHSCOPE_API_KEY"] = api_key
         logger.info(f"[ChatModelFactory]构建 DashScope 模型：{rag_conf['chat_model_name']}")
-        return ChatTongyi(model=rag_conf["chat_model_name"])
+        return ChatTongyi(model=rag_conf["chat_model_name"], api_key=api_key)
 
     def generator(self) -> BaseChatModel:
         """基于环境变量构建默认实例（CLI / 评测脚本用）。"""
@@ -106,7 +104,10 @@ class EmbeddingsFactory(BaseModelFactory):
             return LocalHashEmbeddings(dimension=dimension)
 
         logger.info(f"[EmbeddingsFactory]构建 DashScope embedding：{rag_conf['embedding_model_name']}")
-        return DashScopeEmbeddings(model=rag_conf["embedding_model_name"])
+        return DashScopeEmbeddings(
+            model=rag_conf["embedding_model_name"],
+            dashscope_api_key=os.getenv("DASHSCOPE_API_KEY"),
+        )
 
     def generator(self) -> Embeddings:
         return self.create()
