@@ -1,16 +1,27 @@
-from typing import Iterator, Tuple, List, Dict
+from dataclasses import dataclass
+from typing import Iterator, Tuple, List, Dict, Optional
 
 from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
 from model.factory import chat_model as _default_chat_model
-from agent.tools.agent_tools import (rag_summarize, get_weather, get_user_location, get_user_id,
-                                     get_current_month, fetch_external_data, fill_context_for_report)
-from agent.tools.profile_tools import get_user_profile
+from database.profile_db import UserProfile
+from agent.tools.agent_tools import (
+    rag_summarize,
+    get_chain_status,
+    get_current_month,
+    fetch_external_data,
+    fill_context_for_report,
+    resolve_location_or_ip,
+)
+from agent.tools.profile_tools import format_user_profile
 from agent.tools.middleware import build_agent_prompt
 from agent.services.memory_compression import MessageCompressionService
 from agent.message_builder import build_agent_messages
 from agent.stream_policy import should_short_circuit_rag_answer
+from utils.session_context import DEFAULT_USER_ID, current_location, current_user_id
+from utils.user_profile import current_profile
 
 
 # 流式输出事件类型，前端按此分类渲染：
@@ -19,6 +30,13 @@ from agent.stream_policy import should_short_circuit_rag_answer
 #   ("tool_result", str) - 工具返回的内容（折叠展示）
 #   ("answer", str)    - Agent 最终回答（chat 区主流式输出）
 StreamEvent = Tuple[str, str]
+
+
+@dataclass(frozen=True)
+class AgentToolContext:
+    user_id: str = DEFAULT_USER_ID
+    location: Optional[str] = None
+    profile: Optional[UserProfile] = None
 
 
 class ReactAgent:
@@ -30,17 +48,52 @@ class ReactAgent:
                         未传则使用模块级默认实例（基于环境变量，供 CLI / 评测脚本使用）。
             max_turns: 滑动窗口保留的最大对话轮数（默认 6 轮），超过后自动压缩旧对话。
         """
-        self.agent = create_react_agent(
-            model=chat_model or _default_chat_model,
-            tools=[rag_summarize, get_weather, get_user_location, get_user_id,
-                   get_current_month, fetch_external_data, fill_context_for_report,
-                   get_user_profile],
+        self.chat_model = chat_model or _default_chat_model
+        self.compression_service = MessageCompressionService(max_turns=max_turns)
+
+    @staticmethod
+    def _build_context_tools(context: AgentToolContext):
+        """构造绑定本次会话快照的工具，避免多用户 Streamlit 会话串号。"""
+
+        @tool(description="获取当前用户所在地区，返回纯字符串地区名。优先使用前端设置的会话地区，兜底用 IP 粗定位")
+        def get_user_location() -> str:
+            return resolve_location_or_ip(context.location)
+
+        @tool(description="获取当前登录用户的ID，返回纯字符串。ID 来自本次 Agent 执行的会话快照")
+        def get_user_id() -> str:
+            return context.user_id
+
+        @tool(description="获取当前用户的档案信息（经验等级、地区、设备型号、常用链、连接方式、是否开启 Passphrase、是否完成备份验证），返回结构化字符串")
+        def get_user_profile() -> str:
+            return format_user_profile(context.profile)
+
+        return [
+            rag_summarize,
+            get_chain_status,
+            get_user_location,
+            get_user_id,
+            get_current_month,
+            fetch_external_data,
+            fill_context_for_report,
+            get_user_profile,
+        ]
+
+    def _build_agent(self, context: AgentToolContext):
+        return create_react_agent(
+            model=self.chat_model,
+            tools=self._build_context_tools(context),
             prompt=build_agent_prompt,
             version="v2",
         )
-        self.compression_service = MessageCompressionService(max_turns=max_turns)
 
-    def execute_stream(self, query: str, chat_history: List[Dict[str, str]] = None) -> Iterator[StreamEvent]:
+    def execute_stream(
+        self,
+        query: str,
+        chat_history: List[Dict[str, str]] = None,
+        user_id: Optional[str] = None,
+        location: Optional[str] = None,
+        user_profile: Optional[UserProfile] = None,
+    ) -> Iterator[StreamEvent]:
         """流式执行，按事件类型 yield。
 
         改造前：所有 AIMessage 都 yield 为字符串，"思考: xxx"和最终回答混在一起
@@ -50,7 +103,17 @@ class ReactAgent:
         Args:
             query: 用户当前输入的问题
             chat_history: 历史对话列表，格式为 [{"role": "user", "content": "..."}, ...]
+            user_id: 可选，本次执行绑定的用户 ID。Web 前端应显式传入，避免共享进程串号。
+            location: 可选，本次执行绑定的地区。
+            user_profile: 可选，本次执行绑定的用户档案。
         """
+        context = AgentToolContext(
+            user_id=user_id or current_user_id(),
+            location=location if location is not None else current_location(),
+            profile=user_profile if user_profile is not None else current_profile(),
+        )
+        agent = self._build_agent(context)
+
         # 构建输入消息（历史 + 当前问题），兼容前端已将当前问题写入历史的场景。
         messages = build_agent_messages(query, chat_history)
 
@@ -63,9 +126,15 @@ class ReactAgent:
 
         seen_ai_ids: set[str] = set()
         seen_tool_ids: set[str] = set()
+        # stream_mode="values" returns the full state each time; skip input history.
+        processed_message_count = len(compressed_messages)
 
-        for chunk in self.agent.stream(input_dict, stream_mode="values"):
-            for msg in chunk.get("messages", []):
+        for chunk in agent.stream(input_dict, stream_mode="values"):
+            state_messages = chunk.get("messages", [])
+            new_messages = state_messages[processed_message_count:]
+            processed_message_count = max(processed_message_count, len(state_messages))
+
+            for msg in new_messages:
                 msg_id = getattr(msg, "id", None)
                 if not msg_id:
                     continue

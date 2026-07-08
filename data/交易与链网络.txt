@@ -1,0 +1,113 @@
+# 硬件签名、交易确认与连接到链上应用（source-backed 改写）
+
+资料来源（事实参考，内容已重新组织为 KeyGuard 客服条目，不复制原文）：
+- S1 Ethereum.org - Gas and fees: https://ethereum.org/developers/docs/gas/
+- S2 Ethereum EIP-1559: https://eips.ethereum.org/EIPS/eip-1559
+- S3 Bitcoin Core - Opt-in RBF FAQ: https://bitcoincore.org/en/faq/optin_rbf/
+- S4 Bitcoin Core - Mempool replacement policy: https://github.com/bitcoin/bitcoin/blob/master/doc/policy/mempool-replacements.md
+- S5 WalletConnect Wallet SDK overview: https://docs.walletconnect.network/wallet-sdk/overview
+- S6 Ledger Support - Enable blind signing in Ethereum app: https://support.ledger.com/article/4405481324433-zd
+- S7 Ledger Support - E8 Security Risk Detected: https://support.ledger.com/article/E8-This-transaction-cannot-be-trusted
+- S8 Ledger Support - How to revoke token approvals: https://support.ledger.com/article/8700644160925-zd
+- S9 MetaMask Support - How to revoke smart contract allowances/token approvals: https://support.metamask.io/more-web3/learn/how-to-revoke-smart-contract-allowances-token-approvals/
+- S10 Ledger Support - Receiving address changed: https://support.ledger.com/article/360034336713-zd
+- S11 Ledger Support - Understanding Ledger Ethereum settings: https://support.ledger.com/article/understanding-ledger-ethereum-eth-settings
+- S12 Ledger Support - Derivation path vulnerability in Bitcoin derivatives: https://support.ledger.com/article/360015738179-zd
+
+1. 问题：交易发出后长时间未确认，是不是硬件坏了。
+适用场景：用户已经在设备上确认签名，但交易 pending。
+排查步骤：先查交易哈希是否已广播；如果已广播，重点看网络拥堵、手续费、nonce 或前序交易；硬件钱包通常只负责签名，不决定链上确认速度。
+建议动作：把“设备签名成功”和“链上确认成功”分开解释，避免误判硬件故障。
+安全边界：不要重复发送同金额交易，避免误操作。
+来源参考：S1、S2、S3
+
+2. 问题：以太坊交易手续费异常高。
+适用场景：设备签名前，App 显示很高的 Gas 或用户担心被坑。
+排查步骤：解释以太坊费用和网络拥堵相关，EIP-1559 引入 base fee 和 priority fee；让用户核对交易类型、合约交互和当前网络状态。
+建议动作：非紧急交易可以等待网络低峰；高价值交易先小额测试。
+安全边界：如果设备屏幕显示的交易内容和预期不一致，拒绝签名。
+来源参考：S1、S2
+
+3. 问题：比特币手续费设置过低。
+适用场景：BTC 交易迟迟不确认。
+排查步骤：确认钱包是否支持 RBF；若原交易标记为可替换，可用更高手续费替换；否则等待确认或按钱包支持能力处理。
+建议动作：下次转账前根据当前费率选择合适手续费。
+安全边界：替换交易需要理解钱包提示，确认设备屏幕上的交易详情。
+来源参考：S3、S4
+
+4. 问题：连接 DeFi 或链上应用时硬件钱包没反应。
+适用场景：用户用 WalletConnect、浏览器插件或移动端连接应用。
+排查步骤：确认 App 与硬件设备连接正常；确认链和账户匹配；检查会话是否过期；重新连接会话；在设备屏幕上等待签名确认。
+建议动作：把连接链上应用的问题拆成三层：App 到设备、钱包到 dApp、交易签名到链上。
+安全边界：不要签署不理解的授权或消息。
+来源参考：S5
+
+5. 问题：设备上出现看不懂的授权或签名内容。
+适用场景：DeFi 授权、消息签名、跨链应用。
+排查步骤：暂停签名；确认应用域名是否正确；确认授权对象、额度、链和账户；如果设备无法清晰展示内容，优先拒绝。
+建议动作：让用户先取消，再回到官方入口重新发起。
+安全边界：硬件钱包保护私钥，但不能替用户判断恶意合约；用户仍需核对签名内容。
+来源参考：S5
+
+6. 问题：链状态工具返回的手续费和实际钱包不同。
+适用场景：用户看到 demo 链状态和真实钱包费率不同。
+排查步骤：说明当前 demo 使用模拟链状态，只用于演示 Agent 工具调用；真实交易以前端钱包、区块浏览器或节点返回的实时费率为准。
+建议动作：生产环境应接入真实链上 API 或可信节点。
+安全边界：不要把 demo 费率当作真实资产操作依据。
+来源参考：S1、S2、S3
+
+7. 问题：设备要求开启盲签才能使用 dApp。
+适用场景：用户连接 DeFi、NFT 或跨链应用时，钱包提示需要 blind signing。
+排查步骤：确认 dApp 是否官方入口；检查链、账户、合约和交易类型；确认设备无法清晰展示内容的原因；能用清晰签名时优先使用清晰签名。
+建议动作：盲签只在理解风险且必要时临时开启，用完后关闭。
+安全边界：看不懂的授权或消息不要签，盲签不是故障修复按钮。
+来源参考：S6、S7、S11
+
+8. 问题：设备显示原始数据或无法理解的合约调用。
+适用场景：设备屏幕只显示十六进制、raw data 或难以理解的字段。
+排查步骤：停止签名；回到 dApp 官方页面确认操作意图；检查是否为授权、跨链、合约升级或高风险消息；如果无法确认，拒绝签名。
+建议动作：复杂操作先小额试验，优先使用支持清晰签名的钱包入口。
+安全边界：硬件钱包保护私钥，但不能保证所有合约调用都是安全的。
+来源参考：S7、S8
+
+9. 问题：如何撤销不再使用的合约授权。
+适用场景：用户曾连接 DeFi、NFT 市场或跨链桥，担心长期授权风险。
+排查步骤：使用区块浏览器、钱包或可信授权管理工具查看授权；按链和账户筛选；优先撤销无限额度、陌生合约和长期不用的授权。
+建议动作：撤销授权本身也是链上交易，需要在设备屏幕核对并支付手续费。
+安全边界：不要连接假冒授权管理网站，也不要签署看不懂的撤销交易。
+来源参考：S8、S9
+
+10. 问题：收款地址每次都变了是否正常。
+适用场景：用户发现 BTC 或某些账户每次生成的收款地址不同。
+排查步骤：解释部分钱包会基于标准派生路径生成新收款地址，用于隐私和地址管理；旧地址通常仍可接收资产；用户应以设备屏幕显示为准。
+建议动作：收款前在设备屏幕核对地址，保存交易记录以便未来查账。
+安全边界：地址变化正常不代表可以忽略设备屏幕核对。
+来源参考：S10
+
+11. 问题：选择了错误网络或地址格式怎么办。
+适用场景：用户把资产发到错误链、错误网络或不兼容地址格式。
+排查步骤：先查交易哈希和目标地址；确认资产在哪条链上；确认目标地址私钥是否由用户控制；如果只是钱包未显示，可能需要添加正确网络或使用兼容钱包访问。
+建议动作：不要重复转账；先收集链、交易哈希、目标地址和发送平台信息。
+安全边界：客服不能保证找回发到错误链或错误地址的资产。
+来源参考：S1、S10、S12
+
+12. 问题：Bitcoin 交易想加速或取消。
+适用场景：BTC 手续费设置过低，交易长时间未确认。
+排查步骤：确认交易是否标记为可替换；如果支持 RBF，可用更高手续费替换；如果不支持，只能等待或按钱包支持能力处理。
+建议动作：下一次转账前根据当前费率和紧急程度选择手续费。
+安全边界：替换交易仍需在设备屏幕确认收款地址、金额和手续费。
+来源参考：S3、S4
+
+13. 问题：同一个地址后续交易被 nonce 卡住。
+适用场景：EVM 链上前序交易 pending，后续交易无法确认。
+排查步骤：检查同地址是否有更低 nonce 的 pending 交易；加速或取消前序交易；不要连续发送多笔相同转账。
+建议动作：在钱包里按相同 nonce 发起替换交易，费用要足以被网络接受。
+安全边界：硬件钱包只负责签名，nonce 和确认顺序由链上规则决定。
+来源参考：S1、S2
+
+14. 问题：连接 WalletConnect 后账户或链不对。
+适用场景：手机钱包连接 dApp 后显示错误账户、错误网络或设备不弹签名。
+排查步骤：断开旧会话；在钱包中切换正确账户和链；重新扫描连接；确认设备已解锁并打开对应链应用。
+建议动作：遇到 dApp 长时间无响应，先重建会话而不是反复签名。
+安全边界：不要因为连接失败而把助记词输入 dApp 页面。
+来源参考：S5

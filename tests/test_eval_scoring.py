@@ -9,17 +9,17 @@ class FakeEventAgent:
             ("thought", "需要先检索知识库"),
             ("tool_call", "调用 `rag_summarize`"),
             ("tool_result", "命中故障排除资料"),
-            ("answer", "请先检查充电座，"),
-            ("answer", "再清洁红外传感器。"),
+            ("answer", "请先更换 USB-C 数据线，"),
+            ("answer", "再确认设备已解锁。"),
         ])
 
 
 class EvalScoringTest(unittest.TestCase):
     def test_score_answer_reports_hits_misses_and_coverage(self):
-        score = score_answer("请检查充电座、基座和红外传感器。", ["充电座", "基座", "传感器", "重启"])
+        score = score_answer("请检查 USB-C 数据线、官方应用和设备解锁状态。", ["USB-C", "官方应用", "设备解锁", "重启"])
 
         self.assertEqual(score["coverage"], 0.75)
-        self.assertEqual(score["hit_keywords"], ["充电座", "基座", "传感器"])
+        self.assertEqual(score["hit_keywords"], ["USB-C", "官方应用", "设备解锁"])
         self.assertEqual(score["missed_keywords"], ["重启"])
 
     def test_score_answer_handles_empty_expected_keywords(self):
@@ -30,9 +30,9 @@ class EvalScoringTest(unittest.TestCase):
         self.assertEqual(score["missed_keywords"], [])
 
     def test_run_agent_only_collects_answer_events(self):
-        answer = run_agent(FakeEventAgent(), "扫地机器人无法正常回充怎么办？")
+        answer = run_agent(FakeEventAgent(), "硬件钱包连接不上电脑怎么办？")
 
-        self.assertEqual(answer, "请先检查充电座，再清洁红外传感器。")
+        self.assertEqual(answer, "请先更换 USB-C 数据线，再确认设备已解锁。")
 
 
 if __name__ == "__main__":

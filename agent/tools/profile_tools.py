@@ -1,44 +1,52 @@
 """
-用户档案相关工具：让 Agent 能访问用户档案信息
+用户档案相关工具：让 Agent 能访问硬件钱包用户档案信息
 
-通过 get_user_profile 工具，Agent 可以获取用户的年龄、地址、家庭面积、
-是否有宠物、是否有地毯、设备型号等信息，用于个性化推荐。
+通过 get_user_profile 工具，Agent 可以获取用户的经验等级、地区、设备型号、
+常用链、连接方式、Passphrase 状态和备份验证状态，用于个性化安全建议。
 """
+
+from typing import Optional
 
 from langchain_core.tools import tool
 from utils.user_profile import current_profile
 from utils.logger_handler import logger
+from database.profile_db import UserProfile
 
 
-@tool(description="获取当前用户的档案信息（年龄、地址、家庭面积、是否有宠物、是否有地毯、设备型号），返回结构化字符串")
-def get_user_profile() -> str:
-    """获取当前用户档案，用于个性化推荐
-
-    当用户询问适合自己家庭的情况、需要个性化建议时，调用此工具获取用户档案。
-
-    Returns:
-        用户档案的结构化描述，如"年龄：35岁；地址：深圳南山区；家庭面积：120平方米；是否有宠物：是；是否有地毯：否；设备型号：小米扫地机器人2S"
-        如果用户未填写档案，返回"当前用户未填写档案信息"
-    """
-    profile = current_profile()
-
+def format_user_profile(profile: Optional[UserProfile]) -> str:
+    """格式化硬件钱包用户档案，供工具和会话快照复用。"""
     if not profile:
         return "当前用户未填写档案信息，无法提供个性化建议"
 
     parts = []
-    if profile.age:
-        parts.append(f"年龄：{profile.age}岁")
-    if profile.address:
-        parts.append(f"地址：{profile.address}")
-    if profile.home_area:
-        parts.append(f"家庭面积：{profile.home_area}平方米")
-    if profile.has_pets is not None:
-        parts.append(f"是否有宠物：{'是' if profile.has_pets else '否'}")
-    if profile.has_carpets is not None:
-        parts.append(f"是否有地毯：{'是' if profile.has_carpets else '否'}")
+    if profile.experience_level:
+        parts.append(f"经验等级：{profile.experience_level}")
+    if profile.region:
+        parts.append(f"地区：{profile.region}")
     if profile.device_model:
         parts.append(f"设备型号：{profile.device_model}")
+    if profile.preferred_chains:
+        parts.append(f"常用链：{profile.preferred_chains}")
+    if profile.connection_method:
+        parts.append(f"连接方式：{profile.connection_method}")
+    if profile.passphrase_enabled is not None:
+        parts.append(f"Passphrase：{'已开启' if profile.passphrase_enabled else '未开启'}")
+    if profile.backup_verified is not None:
+        parts.append(f"备份验证：{'已完成' if profile.backup_verified else '未完成'}")
 
     profile_str = "；".join(parts) if parts else "用户档案未填写详细信息"
     logger.info(f"[get_user_profile] 获取到档案: {profile_str}")
     return profile_str
+
+
+@tool(description="获取当前用户的档案信息（经验等级、地区、设备型号、常用链、连接方式、是否开启 Passphrase、是否完成备份验证），返回结构化字符串")
+def get_user_profile() -> str:
+    """获取当前硬件钱包用户档案，用于个性化安全建议
+
+    当用户询问设备使用建议、安全配置、备份策略等个性化问题时，调用此工具获取用户档案。
+
+    Returns:
+        用户档案的结构化描述，如"经验等级：进阶；地区：深圳；设备型号：KeyGuard Pro；常用链：BTC, ETH, SOL；连接方式：USB-C；Passphrase：已开启；备份验证：已完成"
+        如果用户未填写档案，返回"当前用户未填写档案信息"
+    """
+    return format_user_profile(current_profile())

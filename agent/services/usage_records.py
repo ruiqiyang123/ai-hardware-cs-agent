@@ -1,4 +1,4 @@
-"""用户使用记录加载服务。
+"""硬件钱包用户使用记录加载服务。
 
 从 agent_tools.py 抽出来的原因：
 - CSV 解析是纯逻辑，独立成 load_usage_records(path) 后可传任意临时路径做单测；
@@ -7,7 +7,7 @@
 数据结构：
     {
         "1001": {
-            "2025-06": {"特征": ..., "效率": ..., "耗材": ..., "对比": ...},
+            "2025-06": {"特征": "使用概况", "效率": "安全状态", "耗材": "交易状态", "对比": "风险对比"},
             ...
         },
         ...
@@ -77,6 +77,6 @@ def find_usage_record(
 
 
 def fetch_usage_record(path: str, user_id: str, month: str) -> str:
-    """获取指定用户在指定月份的使用记录，返回字符串；未检索到返回空字符串。"""
+    """获取指定用户在指定月份的硬件钱包使用记录，返回字符串；未检索到返回空字符串。"""
     records = load_usage_records(path)
     return find_usage_record(records, user_id, month)

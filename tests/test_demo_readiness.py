@@ -1,3 +1,4 @@
+import os
 import unittest
 from pathlib import Path
 
@@ -53,6 +54,24 @@ class DemoReadinessTest(unittest.TestCase):
         self.assertNotIn("访客无需配置", app)
         self.assertIn('st.caption(f"模型：MiMo · `{mimo_model_name}`")', app)
 
+    def test_streamlit_demo_is_keyguard_wallet_scenario(self):
+        app = read_text("app.py")
+
+        self.assertIn("KeyGuard 硬件钱包智能客服", app)
+        self.assertIn("硬件钱包开不了机怎么办？", app)
+        self.assertIn("蓝牙没法连接手机怎么办？", app)
+        self.assertIn("设备丢了或坏了，资产还能恢复吗？", app)
+        self.assertIn("Passphrase 忘了，为什么恢复后余额为零？", app)
+        self.assertIn("1005 - 赵先生（成都） · 展示记忆功能", app)
+        self.assertIn("展示记忆功能：已预置 6 轮历史对话", app)
+        self.assertIn("压缩摘要（演示）", app)
+        self.assertIn("赵先生此前咨询过蓝牙连接失败", app)
+        self.assertIn("不会作为聊天回答展示", app)
+        self.assertIn("get_chain_status", read_text("agent/react_agent.py"))
+        self.assertNotIn("扫地机器人", app)
+        self.assertNotIn("是否有宠物", app)
+        self.assertNotIn("是否有地毯", app)
+
     def test_init_script_and_env_example_exist(self):
         self.assertTrue((ROOT / "scripts/init_knowledge_base.py").exists())
 
@@ -76,6 +95,30 @@ class DemoReadinessTest(unittest.TestCase):
         # 在线 / 本地两种体验路径
         self.assertIn("在线体验", readme)
         self.assertIn("本地启动", readme)
+
+    def test_readme_has_demo_script_without_internal_positioning_sections(self):
+        readme = read_text("README.md")
+
+        self.assertIn("72 条 source-backed 客服条目", readme)
+        self.assertIn("设备丢了或坏了，资产还能恢复吗？", readme)
+        self.assertIn("Passphrase 忘了，为什么恢复后余额为零？", readme)
+        self.assertNotIn("作品集 / 简历口径", readme)
+        self.assertNotIn("适合在简历或面试中强调的表达", readme)
+        self.assertNotIn("产品边界", readme)
+
+    def test_only_readme_markdown_is_changed_for_wallet_migration(self):
+        protected_docs = [
+            "PROJECT_ANCHOR_CARD.md",
+            "PROJECT_CHAIN_CARD.md",
+            "PROJECT_EVAL_BADCASE_CARD.md",
+            "MEMORY_IMPLEMENTATION.md",
+            "DEPLOYMENT.md",
+        ]
+        changed_markdown = set(
+            p for p in os.popen("git diff --name-only -- '*.md'").read().splitlines()
+        )
+
+        self.assertFalse(changed_markdown.intersection(protected_docs))
 
     def test_root_license_file_is_not_exposed(self):
         self.assertFalse((ROOT / "LICENSE").exists())

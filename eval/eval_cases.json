@@ -1,152 +1,152 @@
 [
   {
-    "question": "扫地机器人无法正常回充，该怎么排查？",
-    "expected_keywords": ["回充", "充电座", "基座", "传感器", "红外"],
-    "category": "故障排查"
+    "question": "硬件钱包开不了机，屏幕完全不亮怎么办？",
+    "expected_keywords": ["USB-C", "数据线", "电源", "长按", "售后检测"],
+    "category": "开机与供电"
   },
   {
-    "question": "机器人一直报错说尘盒满了，但我清理过了还是报错",
-    "expected_keywords": ["尘盒", "传感器", "清理", "复位", "重启"],
-    "category": "故障排查"
+    "question": "设备长期没用，现在插上电也没反应，要先排查什么？",
+    "expected_keywords": ["电量", "连接", "USB", "电源", "不要拆机"],
+    "category": "开机与供电"
   },
   {
-    "question": "扫地机器人卡在沙发下面出不来怎么办？",
-    "expected_keywords": ["沙发", "卡住", "高度", "避障", "禁区"],
-    "category": "故障排查"
+    "question": "硬件钱包插电脑会亮屏，但 App 识别不到设备怎么办？",
+    "expected_keywords": ["设备已解锁", "数据线", "USB", "官方应用", "交叉测试"],
+    "category": "USB 连接"
   },
   {
-    "question": "家里有宠物，应该怎么维护主刷和滤网？",
-    "expected_keywords": ["宠物", "毛发", "主刷", "滤网", "清理"],
-    "category": "维护保养"
+    "question": "电脑识别不到硬件钱包，该怎么排查 USB 线和端口？",
+    "expected_keywords": ["USB-C", "数据线", "直连", "端口", "驱动"],
+    "category": "USB 连接"
   },
   {
-    "question": "多久需要清理一次滤网？",
-    "expected_keywords": ["滤网", "周", "月", "清洗", "更换"],
-    "category": "维护保养"
+    "question": "USB 连接后反复断开重连，是线的问题还是设备的问题？",
+    "expected_keywords": ["更换", "数据线", "USB Hub", "接口", "售后检测"],
+    "category": "USB 连接"
   },
   {
-    "question": "边刷多久换一次？",
-    "expected_keywords": ["边刷", "更换", "月", "磨损", "寿命"],
-    "category": "维护保养"
+    "question": "手机通过线缆连接不上硬件钱包怎么办？",
+    "expected_keywords": ["手机", "USB-C", "转接头", "权限", "官方"],
+    "category": "移动端连接"
   },
   {
-    "question": "小户型适合买哪类扫拖一体机器人？",
-    "expected_keywords": ["小户型", "体积", "导航", "激光", "避障"],
-    "category": "选购建议"
+    "question": "蓝牙没法连接手机，App 一直显示未发现设备怎么办？",
+    "expected_keywords": ["蓝牙", "配对", "权限", "删除旧配对", "固件"],
+    "category": "蓝牙连接"
   },
   {
-    "question": "家里铺了地毯，选扫地机器人要注意什么？",
-    "expected_keywords": ["地毯", "吸力", "增压", "滚刷", "识别"],
-    "category": "选购建议"
+    "question": "系统蓝牙能看到设备，但 KeyGuard App 连接失败怎么办？",
+    "expected_keywords": ["系统蓝牙", "App", "旧配对", "权限", "重新配对"],
+    "category": "蓝牙连接"
   },
   {
-    "question": "养猫的家庭推荐什么样的扫地机器人？",
-    "expected_keywords": ["宠物", "毛发", "防缠绕", "吸力", "滚刷"],
-    "category": "选购建议"
+    "question": "蓝牙连接经常断开，怎么判断是手机问题还是设备问题？",
+    "expected_keywords": ["蓝牙", "电量", "另一台手机", "USB-C", "售后检测"],
+    "category": "蓝牙连接"
   },
   {
-    "question": "扫地机器人的滤网怎么清洗？",
-    "expected_keywords": ["滤网", "清洗", "水洗", "晾干", "更换"],
-    "category": "维护保养"
+    "question": "设备屏幕卡死没有响应，能不能继续确认交易？",
+    "expected_keywords": ["屏幕", "卡死", "重启", "不要确认", "设备屏幕"],
+    "category": "屏幕与按键"
   },
   {
-    "question": "扫地机器人声音很大是什么原因？",
-    "expected_keywords": ["噪音", "异响", "主刷", "电机", "清理"],
-    "category": "故障排查"
+    "question": "硬件钱包按键无响应，应该先做哪些排查？",
+    "expected_keywords": ["按键", "重启", "固件", "记录", "售后"],
+    "category": "屏幕与按键"
   },
   {
-    "question": "机器人拖地拖不干净是什么原因？",
-    "expected_keywords": ["拖地", "水箱", "抹布", "湿度", "清洁"],
-    "category": "故障排查"
+    "question": "设备屏幕显示的收款地址和电脑端不一致怎么办？",
+    "expected_keywords": ["停止", "设备屏幕", "地址", "账户", "恶意软件"],
+    "category": "屏幕与按键"
   },
   {
-    "question": "扫地机器人能清理多大面积？",
-    "expected_keywords": ["面积", "续航", "电池", "充电", "户型"],
-    "category": "选购建议"
+    "question": "PIN 输错太多次设备锁定了，资产会不会丢？",
+    "expected_keywords": ["PIN", "锁定", "备份", "恢复", "资产"],
+    "category": "PIN 与锁定"
   },
   {
-    "question": "集尘基站有什么用？有必要买吗？",
-    "expected_keywords": ["集尘", "基站", "自动", "清理", "尘袋"],
-    "category": "选购建议"
+    "question": "忘记 PIN 但助记词备份还在，该怎么恢复设备？",
+    "expected_keywords": ["PIN", "重置", "备份", "恢复", "客服不能索要"],
+    "category": "PIN 与锁定"
   },
   {
-    "question": "扫地机器人的导航方式有哪些区别？",
-    "expected_keywords": ["导航", "激光", "视觉", "LDS", "SLAM"],
-    "category": "选购建议"
+    "question": "客服能不能帮我破解 PIN 或远程解锁？",
+    "expected_keywords": ["不能", "PIN", "客服", "重置", "备份"],
+    "category": "PIN 与锁定"
   },
   {
-    "question": "机器人总是重复清扫同一个区域怎么办？",
-    "expected_keywords": ["重复", "地图", "建图", "导航", "复位"],
-    "category": "故障排查"
+    "question": "固件升级前需要准备什么，避免设备变砖？",
+    "expected_keywords": ["固件", "官方", "备份", "连接稳定", "电量"],
+    "category": "固件修复"
   },
   {
-    "question": "滤网可以水洗吗？水洗后还能用吗？",
-    "expected_keywords": ["滤网", "水洗", "晾干", "HEPA", "更换"],
-    "category": "维护保养"
+    "question": "固件升级中断了，设备停在升级界面怎么办？",
+    "expected_keywords": ["升级中断", "官方", "修复", "恢复模式", "数据线"],
+    "category": "固件修复"
   },
   {
-    "question": "新买的扫地机器人第一次使用要注意什么？",
-    "expected_keywords": ["首次", "建图", "充电", "调试", "禁区"],
-    "category": "维护保养"
+    "question": "硬件钱包进入 bootloader 或恢复模式，是不是资产没了？",
+    "expected_keywords": ["bootloader", "恢复模式", "修复", "备份", "资产"],
+    "category": "固件修复"
   },
   {
-    "question": "机器人水箱漏水怎么办？",
-    "expected_keywords": ["水箱", "漏水", "密封", "更换", "检查"],
-    "category": "故障排查"
+    "question": "设备提示固件验证失败或安全检查失败怎么办？",
+    "expected_keywords": ["固件验证", "官方", "停止使用", "修复", "不要安装第三方"],
+    "category": "固件修复"
   },
   {
-    "question": "扫地机器人适合老人用吗？操作复杂吗？",
-    "expected_keywords": ["老人", "操作", "语音", "简单", "定时"],
-    "category": "选购建议"
+    "question": "固件升级后账户入口不见了，该怎么恢复？",
+    "expected_keywords": ["固件", "重新安装", "账户", "同步", "Passphrase"],
+    "category": "固件修复"
   },
   {
-    "question": "机器人建图后地图突然丢失了怎么办？",
-    "expected_keywords": ["地图", "建图", "保存", "恢复", "重置"],
-    "category": "故障排查"
+    "question": "旧设备很久没升级，新版 App 识别不到怎么办？",
+    "expected_keywords": ["旧设备", "固件版本", "兼容", "官方", "升级"],
+    "category": "固件修复"
   },
   {
-    "question": "APP连不上机器人，一直显示离线",
-    "expected_keywords": ["APP", "离线", "网络", "WiFi", "重连"],
-    "category": "故障排查"
+    "question": "别人发来的固件包能不能安装？",
+    "expected_keywords": ["不要", "官方", "固件", "第三方", "安全"],
+    "category": "固件修复"
   },
   {
-    "question": "机器人续航明显变短，扫一会就没电",
-    "expected_keywords": ["续航", "电池", "充电", "衰减", "更换"],
-    "category": "故障排查"
+    "question": "硬件钱包丢了，但助记词还在，资产还安全吗？",
+    "expected_keywords": ["设备丢失", "PIN", "备份", "新设备", "恢复"],
+    "category": "设备丢失损坏"
   },
   {
-    "question": "拖布多久需要更换一次？",
-    "expected_keywords": ["拖布", "更换", "月", "磨损", "清洗"],
-    "category": "维护保养"
+    "question": "硬件钱包摔坏了，怎么在新设备上恢复钱包？",
+    "expected_keywords": ["设备损坏", "备份", "恢复", "新设备", "地址"],
+    "category": "设备丢失损坏"
   },
   {
-    "question": "主刷多长时间清理一次毛发？",
-    "expected_keywords": ["主刷", "清理", "毛发", "周", "缠绕"],
-    "category": "维护保养"
+    "question": "恢复钱包后余额为零，可能是什么原因？",
+    "expected_keywords": ["备份", "Passphrase", "派生路径", "链", "同步"],
+    "category": "备份恢复"
   },
   {
-    "question": "集尘袋满了会提示吗？多久换一次？",
-    "expected_keywords": ["集尘", "尘袋", "更换", "提示", "月"],
-    "category": "维护保养"
+    "question": "怎么验证我写下来的备份词有没有写错？",
+    "expected_keywords": ["备份", "恢复检查", "官方", "备用设备", "不要网页"],
+    "category": "备份恢复"
   },
   {
-    "question": "家里门槛比较高，机器人能爬过去吗？",
-    "expected_keywords": ["门槛", "越障", "爬坡", "高度", "厘米"],
-    "category": "选购建议"
+    "question": "连接设备时网页让我输入助记词，这正常吗？",
+    "expected_keywords": ["不正常", "助记词", "停止", "官方", "钓鱼"],
+    "category": "安全边界"
   },
   {
-    "question": "扫地机器人噪音一般多大？吵不吵？",
-    "expected_keywords": ["噪音", "分贝", "静音", "模式", "dB"],
-    "category": "选购建议"
+    "question": "我刚才把完整助记词发到聊天里了，现在应该怎么办？",
+    "expected_keywords": ["不要复述", "立即停止", "泄露", "新钱包", "转移资产"],
+    "category": "安全边界"
   },
   {
-    "question": "可以设置虚拟墙不让它进厨房吗？",
-    "expected_keywords": ["虚拟墙", "禁区", "厨房", "划区", "APP"],
-    "category": "选购建议"
+    "question": "交易已经在设备上确认签名但一直 pending，是不是硬件坏了？",
+    "expected_keywords": ["不是", "硬件钱包", "签名", "网络", "手续费"],
+    "category": "硬件签名边界"
   },
   {
-    "question": "有没有支持定时清扫的机器人？怎么设置？",
-    "expected_keywords": ["定时", "预约", "清扫", "计划", "APP"],
-    "category": "选购建议"
+    "question": "帮我生成本月硬件钱包安全使用报告",
+    "expected_keywords": ["安全使用报告", "设备", "固件", "备份", "风险"],
+    "category": "安全报告"
   }
 ]
